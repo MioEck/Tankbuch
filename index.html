@@ -1173,22 +1173,30 @@ function driveAction() {
 }
 
 function driveLogin() {
+  // Redirect-basierter OAuth – funktioniert auf Android/iOS
+  const redirectUri = location.origin + location.pathname;
+  const url = 'https://accounts.google.com/o/oauth2/v2/auth' +
+    '?client_id=' + encodeURIComponent(GAPI_CLIENT_ID) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
+    '&response_type=token' +
+    '&scope=' + encodeURIComponent(DRIVE_SCOPE);
+  location.href = url;
+}
+
+function checkOAuthRedirect() {
+  // Token aus URL-Hash nach Redirect auslesen
+  const hash = location.hash;
+  if (!hash) return;
+  const params = new URLSearchParams(hash.replace('#', '?'));
+  const token = params.get('access_token');
+  if (!token) return;
+  // Hash aus URL entfernen
+  history.replaceState(null, '', location.pathname);
+  driveToken = token;
   const btn = document.getElementById('driveBtn');
-  btn.textContent = '⏳';
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: GAPI_CLIENT_ID,
-    scope: DRIVE_SCOPE,
-    callback: async (resp) => {
-      if (resp.error) { toast('Drive-Login fehlgeschlagen'); btn.textContent = '☁️ Drive'; return; }
-      driveToken = resp.access_token;
-      btn.textContent = '☁️ Sync';
-      btn.style.color = 'var(--accent)';
-      toast('✅ Drive verbunden');
-      // Direkt laden
-      await driveLoad();
-    }
-  });
-  client.requestAccessToken();
+  if (btn) { btn.textContent = '☁️ Sync'; btn.style.color = 'var(--accent)'; }
+  toast('✅ Drive verbunden');
+  driveLoad();
 }
 
 function showDriveMenu() {
@@ -1295,6 +1303,7 @@ function buildCSV() {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 load();
 loadLogoCache();
+checkOAuthRedirect();
 renderTsPicker('Nordoel');
 render();
 
