@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0a0f">
 <title>Tankbuch · Auris</title>
-<script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -477,7 +476,6 @@
   <div class="header-actions">
     <button class="btn btn-ghost" onclick="openImport()">📂 Import</button>
     <button class="btn btn-ghost" onclick="exportCSV()">💾 Export</button>
-    <button class="btn btn-ghost" id="driveBtn" onclick="driveAction()">☁️ Drive</button>
     <button class="btn btn-primary" onclick="openAdd()">+ Tanken</button>
   </div>
 </header>
@@ -1152,144 +1150,6 @@ function setTankstelle(name) {
   document.querySelectorAll('.ts-btn').forEach(b => b.classList.remove('selected'));
   const btn = document.getElementById('tsBtn_' + name);
   if (btn) btn.classList.add('selected');
-}
-
-
-// ─── Google Drive Sync ────────────────────────────────────────────────────────
-const GAPI_CLIENT_ID = '845334544375-hf9spk94f2gjum9ipjt5fti60o57dp3e.apps.googleusercontent.com';
-const DRIVE_FILENAME = 'Auris-Verbrauch.csv';
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
-
-let driveToken = null;
-let driveFileId = null;
-
-function driveAction() {
-  if (driveToken) {
-    // Bereits eingeloggt: Menü anzeigen
-    showDriveMenu();
-  } else {
-    driveLogin();
-  }
-}
-
-function driveLogin() {
-  const btn = document.getElementById('driveBtn');
-  btn.textContent = '⏳';
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: GAPI_CLIENT_ID,
-    scope: DRIVE_SCOPE,
-    callback: async (resp) => {
-      if (resp.error) { toast('Drive-Login fehlgeschlagen'); btn.textContent = '☁️ Drive'; return; }
-      driveToken = resp.access_token;
-      btn.textContent = '☁️ Sync';
-      btn.style.color = 'var(--accent)';
-      toast('✅ Drive verbunden');
-      // Direkt laden
-      await driveLoad();
-    }
-  });
-  client.requestAccessToken();
-}
-
-function showDriveMenu() {
-  const choice = confirm('Google Drive\n\nOK = Daten hochladen (Speichern)\nAbbrechen = Daten herunterladen (Laden)');
-  if (choice) driveSave();
-  else driveLoad();
-}
-
-async function driveSave() {
-  if (!driveToken) { driveLogin(); return; }
-  toast('⏳ Speichere...');
-  try {
-    const csv = buildCSV();
-    const blob = new Blob(['\uFEFF' + csv], {type: 'text/csv;charset=utf-8;'});
-
-    // Datei-ID suchen
-    const fileId = await findDriveFile();
-
-    let url, method;
-    if (fileId) {
-      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
-      method = 'PATCH';
-    } else {
-      // Neue Datei anlegen
-      const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'text/csv' })
-      });
-      const metaJson = await meta.json();
-      driveFileId = metaJson.id;
-      url = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`;
-      method = 'PATCH';
-    }
-
-    await fetch(url, {
-      method,
-      headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'text/csv' },
-      body: blob
-    });
-    toast('✅ In Drive gespeichert');
-  } catch(e) {
-    toast('❌ Fehler: ' + e.message);
-  }
-}
-
-async function driveLoad() {
-  if (!driveToken) { driveLogin(); return; }
-  toast('⏳ Lade von Drive...');
-  try {
-    const fileId = await findDriveFile();
-    if (!fileId) { toast('Keine Datei in Drive gefunden'); return; }
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-      headers: { Authorization: 'Bearer ' + driveToken }
-    });
-    const text = await r.text();
-    const parsed = parseCSV(text);
-    if (!parsed.length) { toast('Datei leer oder unlesbar'); return; }
-    entries = parsed;
-    recalcGefahren();
-    save();
-    render();
-    toast(`✅ ${parsed.length} Einträge geladen`);
-  } catch(e) {
-    toast('❌ Fehler: ' + e.message);
-  }
-}
-
-async function findDriveFile() {
-  if (driveFileId) return driveFileId;
-  const r = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}' and trashed=false&fields=files(id,name)`,
-    { headers: { Authorization: 'Bearer ' + driveToken } }
-  );
-  const d = await r.json();
-  if (d.files && d.files.length > 0) {
-    driveFileId = d.files[0].id;
-    return driveFileId;
-  }
-  return null;
-}
-
-function buildCSV() {
-  const sorted = sortEntries(entries);
-  calcVerbrauch(sorted);
-  const header = 'Datum;Kilometerstand;Gefahren;Liter;Tankstelle;Sorte;Voll;Betrag;Liter Preis ;Uhrzeit;Ort;L;T';
-  const rows = sorted.map(e => [
-    e.datum, e.km, e.gefahren || '',
-    String(e.liter).replace('.', ','), e.tankstelle, e.sorte,
-    e.voll ? '🟢' : '🔴',
-    String(e.betrag).replace('.', ','),
-    String(e.literpreis).replace('.', ','),
-    e.uhrzeit, e.ort,
-    e.verbrauch !== '' ? String(e.verbrauch).replace('.', ',') : '',
-    e.temp !== '' ? e.temp + ' °C' : '',
-  ].join(';'));
-  const totalLiter = sorted.reduce((s,e)=>s+e.liter,0);
-  const totalBetrag = sorted.reduce((s,e)=>s+e.betrag,0);
-  const totalKm = sorted.reduce((s,e)=>s+e.gefahren,0);
-  const sumRow = `;;${totalKm};${totalLiter.toFixed(2).replace('.',',')};;;;;${totalBetrag.toFixed(2).replace('.',',')};;;;;`;
-  return [header, ...rows, sumRow].join('\n');
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
