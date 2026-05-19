@@ -1067,12 +1067,24 @@ async function fetchTemp() {
     const pos = await new Promise((res,rej) =>
       navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000}));
     const {latitude: lat, longitude: lon} = pos.coords;
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-    const r = await fetch(url);
-    const d = await r.json();
-    const temp = Math.round(d.current_weather.temperature);
+
+    // Temperatur + Ort parallel holen
+    const [weatherRes, ortRes] = await Promise.all([
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`),
+      fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=de`)
+    ]);
+
+    const weather = await weatherRes.json();
+    const temp = Math.round(weather.current_weather.temperature);
     document.getElementById('f_temp').value = temp;
-    toast(`🌡️ ${temp} °C`);
+
+    const ortData = await ortRes.json();
+    const city = ortData.city || ortData.locality || ortData.principalSubdivision || '';
+    if (city && !document.getElementById('f_ort').value) {
+      document.getElementById('f_ort').value = city;
+    }
+
+    toast(`🌡️ ${temp} °C · 📍 ${city || '?'}`);
   } catch(e) {
     toast('GPS oder Wetter nicht verfügbar');
   }
@@ -1090,13 +1102,14 @@ function toast(msg) {
 
 
 async function autoFillOrt() {
+  // Ort wird zusammen mit Temperatur geholt (Auto-Button)
+  // Hier nur stiller Versuch beim Öffnen
   const ortField = document.getElementById('f_ort');
   if (ortField.value) return;
   try {
     const pos = await new Promise((res,rej) =>
-      navigator.geolocation.getCurrentPosition(res, rej, {timeout:6000}));
+      navigator.geolocation.getCurrentPosition(res, rej, {timeout:5000, maximumAge: 60000}));
     const {latitude: lat, longitude: lon} = pos.coords;
-    // Big Data Cloud - kein API-Key, CORS-freundlich
     const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=de`);
     const d = await r.json();
     const city = d.city || d.locality || d.principalSubdivision || '';
