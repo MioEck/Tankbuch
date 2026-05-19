@@ -9,6 +9,18 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
+
+  [data-theme="light"] {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --surface2: #e8eaed;
+    --border: #d0d4da;
+    --accent: #00a870;
+    --accent2: #0066cc;
+    --red: #cc2244;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+  }
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
 
   :root {
@@ -477,6 +489,7 @@
   <div class="header-actions">
     <button class="btn btn-ghost" onclick="openImport()">📂 Import</button>
     <button class="btn btn-ghost" onclick="exportCSV()">💾 Export</button>
+    <button class="btn btn-ghost" id="themeBtn" onclick="toggleTheme()" title="Hell/Dunkel">🌙</button>
     <button class="btn btn-ghost" id="driveBtn" onclick="driveAction()">☁️ Drive</button>
     <button class="btn btn-primary" onclick="openAdd()">+ Tanken</button>
   </div>
@@ -1107,7 +1120,7 @@ async function fetchLogo(domain) {
   if (!domain) return null;
   if (logoCache[domain]) return logoCache[domain];
   try {
-    const url = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    const url = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
     const r = await fetch(url);
     const blob = await r.blob();
     return new Promise(res => {
@@ -1300,7 +1313,27 @@ function buildCSV() {
   return [header, ...rows, sumRow].join('\n');
 }
 
+
+// ─── Theme ───────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  setTheme(next);
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('tankbuch_theme', theme);
+  document.getElementById('themeBtn').textContent = theme === 'light' ? '🌙' : '☀️';
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('tankbuch_theme') || 'dark';
+  setTheme(saved);
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
+loadTheme();
 load();
 loadLogoCache();
 checkOAuthRedirect();
