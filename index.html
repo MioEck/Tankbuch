@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0f">
 <title>Tankbuch · Auris</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -38,6 +40,14 @@
     --muted: #5a6478;
   }
 
+
+  @media screen and (orientation: landscape) and (max-height: 500px) {
+    /* Landscape OK */
+  }
+  
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -426,9 +436,14 @@
 
   @media (max-width: 600px) {
     .stat-val { font-size: 14px; }
-    .header-actions { gap: 4px; }
-    .btn { padding: 7px 10px; font-size: 12px; }
+    .header-actions { gap: 4px; flex-shrink: 0; }
+    .btn { padding: 6px 8px; font-size: 11px; }
+    .btn span.btn-label { display: none; }
     .form-grid { grid-template-columns: 1fr; }
+    header { padding: 10px 12px; }
+    .logo-sub { display: none; }
+    .logo-text { font-size: 12px; letter-spacing: 1px; }
+    .logo-icon { width: 28px; height: 28px; font-size: 16px; }
   }
 
   /* Tankstellen-Picker */
@@ -488,11 +503,11 @@
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn btn-ghost" onclick="openImport()">📂 Import</button>
-    <button class="btn btn-ghost" onclick="exportCSV()">💾 Export</button>
+    <button class="btn btn-ghost" onclick="openImport()"><span class="btn-label">📂 </span>Import</button>
+    <button class="btn btn-ghost" onclick="exportCSV()"><span class="btn-label">💾 </span>Export</button>
     <button class="btn btn-ghost" id="themeBtn" onclick="toggleTheme()" title="Hell/Dunkel">🌙</button>
-    <button class="btn btn-ghost" id="driveBtn" onclick="driveAction()">☁️ Drive</button>
-    <button class="btn btn-primary" onclick="openAdd()">+ Tanken</button>
+    <button class="btn btn-ghost" id="driveBtn" onclick="driveAction()"><span class="btn-label">☁️ </span>Drive</button>
+    <button class="btn btn-primary" onclick="openAdd()">+<span class="btn-label"> Tanken</span></button>
   </div>
 </header>
 
