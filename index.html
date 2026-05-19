@@ -24,9 +24,9 @@
     --red: #f07373;
     --text: #f0ede8;
     --muted: #6b6b80;
-    --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-    --serif: 'DM Serif Display', serif;
+    --mono: 'SF Mono', ui-monospace, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    --serif: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     --radius: 14px;
     --shadow: 0 2px 24px rgba(0,0,0,0.4);
   }
@@ -189,7 +189,7 @@
   }
 
   .logo-text {
-    font-family: var(--serif);
+    font-family: var(--sans);
     font-size: 18px;
     font-weight: 400;
     color: var(--text);
@@ -199,8 +199,9 @@
   .logo-sub {
     font-size: 10px;
     color: var(--muted);
-    font-family: var(--mono);
-    letter-spacing: 0.05em;
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.02em;
   }
 
   .header-actions {
@@ -263,7 +264,7 @@
   .stat:hover { background: var(--surface2); }
 
   .stat-val {
-    font-family: var(--serif);
+    font-family: var(--sans);
     font-size: 24px;
     font-weight: 400;
     color: var(--accent);
@@ -276,7 +277,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-top: 3px;
-    font-family: var(--mono);
+    font-family: var(--sans);
   }
 
   /* Main content */
@@ -305,11 +306,12 @@
   th {
     padding: 10px 12px;
     text-align: left;
-    font-family: var(--mono);
-    font-size: 12px;
+    font-family: var(--sans);
+    font-size: 11px;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
@@ -323,9 +325,10 @@
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
-    font-family: var(--mono);
-    font-size: 14px;
-    letter-spacing: 0.01em;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
 
   tr:last-child td { border-bottom: none; }
@@ -343,7 +346,7 @@
   .voll-yes { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
   .voll-no  { background: var(--red); box-shadow: 0 0 6px var(--red); }
 
-  .verbrauch-cell { color: var(--accent2); font-style: italic; }
+  .verbrauch-cell { color: var(--accent2); }
   .literpreis-cell { color: #ffaa00; }
 
   .sum-row td {
@@ -380,11 +383,10 @@
   }
 
   .modal-title {
-    font-family: var(--serif);
+    font-family: var(--sans);
     font-size: 24px;
     font-weight: 400;
     color: var(--text);
-    font-style: italic;
     margin-bottom: 22px;
   }
 
@@ -399,7 +401,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 6px;
-    font-family: var(--mono);
+    font-family: var(--sans);
     font-weight: 500;
   }
 
