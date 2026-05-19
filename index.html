@@ -10,17 +10,6 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 
-  [data-theme="light"] {
-    --bg: #f0f2f5;
-    --surface: #ffffff;
-    --surface2: #e8eaed;
-    --border: #d0d4da;
-    --accent: #00a870;
-    --accent2: #0066cc;
-    --red: #cc2244;
-    --text: #1a1a2e;
-    --muted: #6b7280;
-  }
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
 
   :root {
@@ -35,6 +24,18 @@
     --muted: #666680;
     --mono: 'Space Mono', monospace;
     --sans: 'Outfit', sans-serif;
+  }
+
+  [data-theme="light"] {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface2: #e8edf3;
+    --border: #cbd2da;
+    --accent: #00a870;
+    --accent2: #0066cc;
+    --red: #cc2244;
+    --text: #1a1a2e;
+    --muted: #5a6478;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1087,6 +1088,21 @@ function toast(msg) {
 }
 
 
+
+async function autoFillOrt() {
+  const ortField = document.getElementById('f_ort');
+  if (ortField.value) return; // schon ausgefüllt
+  try {
+    const pos = await new Promise((res,rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, {timeout:6000}));
+    const {latitude: lat, longitude: lon} = pos.coords;
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=de`);
+    const d = await r.json();
+    const city = d.address.city || d.address.town || d.address.village || d.address.municipality || '';
+    if (city) ortField.value = city;
+  } catch(e) {}
+}
+
 // ─── Tankstellen Logos ────────────────────────────────────────────────────────
 const TANKSTELLEN = [
   { name: 'Nordoel',  domain: 'nordoel.de',           fallback: '⭐️' },
@@ -1116,24 +1132,22 @@ function saveLogoCache() {
   try { localStorage.setItem('tankbuch_logos', JSON.stringify(logoCache)); } catch(e) {}
 }
 
-async function fetchLogo(domain) {
-  if (!domain) return null;
-  if (logoCache[domain]) return logoCache[domain];
-  try {
-    const url = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-    const r = await fetch(url);
-    const blob = await r.blob();
-    return new Promise(res => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        logoCache[domain] = reader.result;
-        saveLogoCache();
-        res(reader.result);
-      };
-      reader.onerror = () => res(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch(e) { return null; }
+const STATIC_LOGOS = {
+  "Aral": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzAwM0RBNSIvPjx0ZXh0IHk9IjQ0IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyOCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5hcmFsPC90ZXh0Pjwvc3ZnPg==",
+  "Shell": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0ZGQ0MwMCIvPjx0ZXh0IHk9IjQ0IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNERDFEMUYiPlNIRUxMPC90ZXh0Pjx0ZXh0IHk9IjI2IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyOCI+8J+QmjwvdGV4dD48L3N2Zz4=",
+  "Jet": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0UzMDYxMyIvPjx0ZXh0IHk9IjQ0IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5KRVQ8L3RleHQ+PC9zdmc+",
+  "Total": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0M4MTAyRSIvPjx0ZXh0IHk9IjMwIiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMyIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5Ub3RhbDwvdGV4dD48dGV4dCB5PSI0OCIgeD0iMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmaWxsPSIjRkZENzAwIj5FbmVyZ2llczwvdGV4dD48L3N2Zz4=",
+  "Esso": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzAwMzA4NyIvPjx0ZXh0IHk9IjQ0IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyNiIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5lc3NvPC90ZXh0Pjwvc3ZnPg==",
+  "Star": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0ZGRDcwMCIvPjx0ZXh0IHk9IjM4IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzMiI+4q2QPC90ZXh0Pjx0ZXh0IHk9IjU2IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjMzMzIj5TVEFSPC90ZXh0Pjwvc3ZnPg==",
+  "Nordoel": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0UzMDYxMyIvPjx0ZXh0IHk9IjMwIiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5OT1JEPC90ZXh0Pjx0ZXh0IHk9IjQ2IiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5PRUw8L3RleHQ+PC9zdmc+",
+  "Team": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iIzAwNjZCMiIvPjx0ZXh0IHk9IjQyIiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxOCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5URUFNPC90ZXh0Pjwvc3ZnPg==",
+  "Markant": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0U4MDAxQyIvPjx0ZXh0IHk9IjMwIiB4PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0id2hpdGUiPk1BUjwvdGV4dD48dGV4dCB5PSI0NiIgeD0iMzIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IndoaXRlIj5LQU5UPC90ZXh0Pjwvc3ZnPg=="
+};
+
+async function fetchLogo(domain, name) {
+  if (!domain && !name) return null;
+  if (STATIC_LOGOS[name]) return STATIC_LOGOS[name];
+  return null;
 }
 
 function renderTsPicker(selected) {
@@ -1146,16 +1160,15 @@ function renderTsPicker(selected) {
     </button>
   `).join('');
 
-  // Logos asynchron nachladen
+  // Logos laden (statisch eingebettet)
   TANKSTELLEN.forEach(async ts => {
-    if (!ts.domain) return;
-    const data = await fetchLogo(ts.domain);
+    const data = await fetchLogo(ts.domain, ts.name);
     if (!data) return;
     const icon = document.getElementById('tsIcon_' + ts.name);
     if (icon) {
-      icon.innerHTML = `<img src="${data}" alt="${ts.name}">`;
-      icon.style.background = 'white';
-      icon.style.padding = '2px';
+      icon.innerHTML = `<img src="${data}" alt="${ts.name}" style="width:24px;height:24px;border-radius:4px;">`;
+      icon.style.background = 'transparent';
+      icon.style.padding = '0';
     }
   });
 }

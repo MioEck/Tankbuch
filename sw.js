@@ -1,4 +1,4 @@
-const CACHE = 'tankbuch-v3';
+const CACHE = 'tankbuch-v5';
 const ASSETS = [
   './',
   './index.html',
