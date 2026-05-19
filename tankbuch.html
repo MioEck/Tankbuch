@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0f">
+<title>Tankbuch · Auris</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #00e5a0;
+    --accent2: #0099ff;
+    --red: #ff4466;
+    --text: #e8e8f0;
+    --muted: #666680;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #00ffb3; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--border);
+  }
+  .btn-danger:hover { border-color: var(--red); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 14px 18px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* Main content */
+  main { padding: 20px; max-width: 100%; }
+
+  /* Table wrapper */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 10px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  th:hover { color: var(--accent); }
+  th.sorted { color: var(--accent); }
+
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: var(--surface2); }
+
+  .td-num { text-align: right; }
+
+  .voll-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .voll-yes { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .voll-no  { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  .verbrauch-cell { color: var(--accent2); }
+  .literpreis-cell { color: #ffaa00; }
+
+  .sum-row td {
+    background: var(--surface2) !important;
+    color: var(--accent);
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  select option { background: var(--bg); }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .voll-toggle {
+    display: flex;
+    gap: 8px;
+  }
+
+  .voll-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.15s;
+  }
+  .voll-btn.active-yes { border-color: var(--accent); background: rgba(0,229,160,0.1); }
+  .voll-btn.active-no  { border-color: var(--red); background: rgba(255,68,102,0.1); }
+
+  .temp-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .temp-row input { flex: 1; }
+
+  .btn-fetch-temp {
+    flex-shrink: 0;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-fetch-temp:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Import area */
+  .import-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 16px;
+  }
+  .import-area:hover, .import-area.drag { border-color: var(--accent); }
+
+  .import-area p { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--accent);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-select {
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .search-input {
+    padding: 7px 12px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    width: 160px;
+  }
+  .search-input:focus { border-color: var(--accent); outline: none; }
+
+  @media (max-width: 600px) {
+    .stat-val { font-size: 14px; }
+    .header-actions { gap: 4px; }
+    .btn { padding: 7px 10px; font-size: 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Tankstellen-Picker */
+  .ts-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .ts-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .ts-btn img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .ts-btn .ts-fallback {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .ts-btn.selected {
+    border-color: var(--accent);
+    background: rgba(0,229,160,0.1);
+    color: var(--text);
+  }
+  .ts-btn:hover { border-color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⛽</div>
+    <div>
+      <div class="logo-text">Tankbuch</div>
+      <div class="logo-sub">Toyota Auris Hybrid</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="openImport()">📂 Import</button>
+    <button class="btn btn-ghost" onclick="exportCSV()">💾 Export</button>
+    <button class="btn btn-primary" onclick="openAdd()">+ Tanken</button>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<main>
+  <div class="filters">
+    <input class="search-input" type="text" placeholder="🔍 Suchen..." oninput="applyFilters()" id="searchInput">
+    <select class="filter-select" onchange="applyFilters()" id="filterTankstelle">
+      <option value="">Alle Tankstellen</option>
+    </select>
+    <select class="filter-select" onchange="applyFilters()" id="filterSorte">
+      <option value="">Alle Sorten</option>
+    </select>
+    <select class="filter-select" onchange="applyFilters()" id="filterJahr">
+      <option value="">Alle Jahre</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('datum')">Datum</th>
+          <th onclick="sortBy('km')">KM-Stand</th>
+          <th onclick="sortBy('gefahren')" class="td-num">Gefahren</th>
+          <th onclick="sortBy('liter')" class="td-num">Liter</th>
+          <th onclick="sortBy('tankstelle')">Tankstelle</th>
+          <th onclick="sortBy('sorte')">Sorte</th>
+          <th>Voll</th>
+          <th onclick="sortBy('betrag')" class="td-num">Betrag</th>
+          <th onclick="sortBy('literpreis')" class="td-num">€/L</th>
+          <th>Uhrzeit</th>
+          <th>Ort</th>
+          <th onclick="sortBy('verbrauch')" class="td-num">L/100km</th>
+          <th onclick="sortBy('temp')" class="td-num">°C</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot"></tfoot>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="empty-icon">⛽</div>
+      <p>Noch keine Einträge. Importiere deine CSV oder füge einen Eintrag hinzu.</p>
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Neue Tankung</div>
+
+    <div class="form-row">
+      <label>Datum & Uhrzeit</label>
+      <input type="datetime-local" id="f_datetime">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Kilometerstand</label>
+        <input type="number" id="f_km" placeholder="z.B. 130000">
+      </div>
+      <div class="form-row">
+        <label>Liter</label>
+        <input type="number" step="0.01" id="f_liter" placeholder="z.B. 35.50">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Betrag (€)</label>
+        <input type="number" step="0.01" id="f_betrag" placeholder="z.B. 65.00">
+      </div>
+      <div class="form-row">
+        <label>Kraftstoff</label>
+        <select id="f_sorte">
+          <option>Super E5</option>
+          <option>Super Aral</option>
+          <option>Super E10</option>
+          <option>Diesel</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Tankstelle</label>
+      <div class="ts-picker" id="tsPicker"></div>
+      <input type="hidden" id="f_tankstelle" value="Nordoel">
+    </div>
+
+    <div class="form-row">
+      <label>Ort</label>
+      <input type="text" id="f_ort" placeholder="z.B. Eckernförde">
+    </div>
+
+    <div class="form-row">
+      <label>Vollgetankt?</label>
+      <div class="voll-toggle">
+        <button class="voll-btn active-yes" id="vollYes" onclick="setVoll(true)">🟢 Ja</button>
+        <button class="voll-btn" id="vollNo" onclick="setVoll(false)">🔴 Nein</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Temperatur (°C)</label>
+      <div class="temp-row">
+        <input type="number" id="f_temp" placeholder="wird automatisch geholt">
+        <button class="btn-fetch-temp" onclick="fetchTemp()" title="GPS-Temperatur holen">🌡️ Auto</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModals()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-title">CSV Importieren</div>
+    <div class="import-area" id="dropZone"
+         ondragover="event.preventDefault(); this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)"
+         onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:36px">📂</div>
+      <p>CSV-Datei hier ablegen oder klicken</p>
+    </div>
+    <input type="file" id="fileInput" accept=".csv" style="display:none" onchange="handleFile(this.files[0])">
+    <p style="font-size:11px; color:var(--muted); text-align:center">Bestehende Daten werden ersetzt</p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModals()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let entries = [];
+let editIndex = null;
+let vollState = true;
+let sortKey = 'datum';
+let sortDir = 1;
+
+// ─── Storage ─────────────────────────────────────────────────────────────────
+function save() {
+  try { localStorage.setItem('tankbuch', JSON.stringify(entries)); } catch(e){}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('tankbuch');
+    if (d) entries = JSON.parse(d);
+  } catch(e){}
+}
+
+// ─── CSV Parse ───────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  // skip header, skip last summary row
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(';');
+    if (!cols[0] || !cols[0].trim() || !cols[1]) continue;
+    const datum = cols[0].trim();
+    const km = parseFloat(cols[1]) || 0;
+    if (!datum || !km) continue;
+
+    // Temperatur: letzte Spalte, kann "3 °C" oder "-1 °C" oder leer sein
+    let temp = '';
+    const rawTemp = (cols[12] || '').trim();
+    const tempMatch = rawTemp.match(/-?\d+/);
+    if (tempMatch) temp = tempMatch[0];
+
+    // Voll: 🟢 oder 🔴
+    const vollRaw = (cols[6] || '').trim();
+    const voll = vollRaw.includes('🟢');
+
+    // Verbrauch: Spalte 11 (L/100km), kann Emoji sein
+    let verbrauch = '';
+    const vRaw = (cols[11] || '').trim().replace(',', '.');
+    if (!isNaN(parseFloat(vRaw))) verbrauch = parseFloat(vRaw);
+
+    result.push({
+      datum: datum,
+      uhrzeit: (cols[9] || '').trim(),
+      km: km,
+      gefahren: parseFloat((cols[2] || '').replace(',', '.')) || 0,
+      liter: parseFloat((cols[3] || '').replace(',', '.')) || 0,
+      tankstelle: (cols[4] || '').trim(),
+      sorte: (cols[5] || '').trim(),
+      voll: voll,
+      betrag: parseFloat((cols[7] || '').replace(',', '.')) || 0,
+      literpreis: parseFloat((cols[8] || '').replace(',', '.')) || 0,
+      ort: (cols[10] || '').trim(),
+      verbrauch: verbrauch,
+      temp: temp,
+    });
+  }
+  return result;
+}
+
+// ─── Sort & Calc ─────────────────────────────────────────────────────────────
+function parseDate(d) {
+  // dd.mm.yyyy
+  const p = d.split('.');
+  if (p.length === 3) return new Date(+p[2], +p[1]-1, +p[0]);
+  return new Date(d);
+}
+
+function sortEntries(arr) {
+  return [...arr].sort((a, b) => {
+    let va, vb;
+    if (sortKey === 'datum') { va = parseDate(a.datum); vb = parseDate(b.datum); return (va-vb)*sortDir; }
+    if (sortKey === 'km') return (a.km - b.km)*sortDir;
+    if (sortKey === 'gefahren') return (a.gefahren - b.gefahren)*sortDir;
+    if (sortKey === 'liter') return (a.liter - b.liter)*sortDir;
+    if (sortKey === 'betrag') return (a.betrag - b.betrag)*sortDir;
+    if (sortKey === 'literpreis') return (a.literpreis - b.literpreis)*sortDir;
+    if (sortKey === 'verbrauch') return ((+a.verbrauch||0) - (+b.verbrauch||0))*sortDir;
+    if (sortKey === 'temp') return ((+a.temp||0) - (+b.temp||0))*sortDir;
+    if (sortKey === 'tankstelle') return a.tankstelle.localeCompare(b.tankstelle)*sortDir;
+    if (sortKey === 'sorte') return a.sorte.localeCompare(b.sorte)*sortDir;
+    return 0;
+  });
+}
+
+function calcVerbrauch(sorted) {
+  // Recalculate Verbrauch for full-tank-to-full-tank pairs
+  let lastFull = null;
+  for (let i = 0; i < sorted.length; i++) {
+    const e = sorted[i];
+    if (!e.voll) { e.verbrauch = ''; continue; }
+    if (lastFull !== null) {
+      const km = e.km - sorted[lastFull].km;
+      // sum liters between lastFull (exclusive) and i (inclusive)
+      let liters = 0;
+      for (let j = lastFull+1; j <= i; j++) liters += sorted[j].liter;
+      e.verbrauch = km > 0 ? (liters / km * 100).toFixed(2) : '';
+    } else {
+      e.verbrauch = '';
+    }
+    lastFull = i;
+  }
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function render() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const fT = document.getElementById('filterTankstelle').value;
+  const fS = document.getElementById('filterSorte').value;
+  const fJ = document.getElementById('filterJahr').value;
+
+  let sorted = sortEntries(entries);
+  calcVerbrauch(sorted);
+
+  // map original indices before filtering
+  let filtered = sorted.map((e, i) => ({...e, _orig: entries.indexOf(e)}));
+
+  if (search) filtered = filtered.filter(e =>
+    Object.values(e).join(' ').toLowerCase().includes(search));
+  if (fT) filtered = filtered.filter(e => e.tankstelle === fT);
+  if (fS) filtered = filtered.filter(e => e.sorte === fS);
+  if (fJ) filtered = filtered.filter(e => e.datum.endsWith(fJ));
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    document.getElementById('tableFoot').innerHTML = '';
+    renderStats([]);
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((e, i) => `
+    <tr>
+      <td>${e.datum}</td>
+      <td class="td-num">${e.km.toLocaleString('de')}</td>
+      <td class="td-num">${e.gefahren ? e.gefahren.toLocaleString('de') + ' km' : ''}</td>
+      <td class="td-num">${e.liter ? e.liter.toFixed(2) + ' L' : ''}</td>
+      <td>${e.tankstelle}</td>
+      <td>${e.sorte}</td>
+      <td style="text-align:center"><span class="voll-dot ${e.voll ? 'voll-yes' : 'voll-no'}"></span></td>
+      <td class="td-num">${e.betrag ? e.betrag.toFixed(2) + ' €' : ''}</td>
+      <td class="td-num literpreis-cell">${e.literpreis ? e.literpreis.toFixed(3) + ' €' : ''}</td>
+      <td>${e.uhrzeit}</td>
+      <td>${e.ort}</td>
+      <td class="td-num verbrauch-cell">${e.verbrauch !== '' ? e.verbrauch : '—'}</td>
+      <td class="td-num">${e.temp !== '' ? e.temp + ' °C' : '—'}</td>
+      <td>
+        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editEntry(${e._orig})">✏️</button>
+        <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteEntry(${e._orig})">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Summary row
+  const totalLiter = filtered.reduce((s,e) => s + e.liter, 0);
+  const totalBetrag = filtered.reduce((s,e) => s + e.betrag, 0);
+  const totalKm = filtered.reduce((s,e) => s + e.gefahren, 0);
+  const avgV = filtered.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+  const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
+
+  document.getElementById('tableFoot').innerHTML = `
+    <tr class="sum-row">
+      <td colspan="2">Σ ${filtered.length} Einträge</td>
+      <td class="td-num">${totalKm.toLocaleString('de')} km</td>
+      <td class="td-num">${totalLiter.toFixed(2)} L</td>
+      <td colspan="3"></td>
+      <td class="td-num">${totalBetrag.toFixed(2)} €</td>
+      <td class="td-num">${totalLiter > 0 ? (totalBetrag/totalLiter).toFixed(3)+' €' : ''}</td>
+      <td colspan="3" class="td-num">${avgVerbrauch !== '—' ? avgVerbrauch+' L/100' : '—'}</td>
+      <td colspan="2"></td>
+    </tr>
+  `;
+
+  renderStats(filtered);
+  updateFilters(sorted);
+}
+
+function renderStats(data) {
+  const totalLiter = data.reduce((s,e) => s + e.liter, 0);
+  const totalBetrag = data.reduce((s,e) => s + e.betrag, 0);
+  const totalKm = data.reduce((s,e) => s + e.gefahren, 0);
+  const avgV = data.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+  const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
+  const lastEntry = data[data.length-1];
+  const avgPreis = data.filter(e=>e.literpreis).map(e=>e.literpreis);
+  const avgLP = avgPreis.length ? (avgPreis.reduce((a,b)=>a+b,0)/avgPreis.length).toFixed(3) : '—';
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="stat-val">${data.length}</div><div class="stat-label">Tankungen</div></div>
+    <div class="stat"><div class="stat-val">${totalKm > 0 ? totalKm.toLocaleString('de') : '—'}</div><div class="stat-label">km gesamt</div></div>
+    <div class="stat"><div class="stat-val">${totalLiter.toFixed(1)} L</div><div class="stat-label">Liter gesamt</div></div>
+    <div class="stat"><div class="stat-val">${totalBetrag.toFixed(2)} €</div><div class="stat-label">Kosten gesamt</div></div>
+    <div class="stat"><div class="stat-val">${avgVerbrauch}</div><div class="stat-label">Ø L/100km</div></div>
+    <div class="stat"><div class="stat-val">${avgLP} €</div><div class="stat-label">Ø €/Liter</div></div>
+    <div class="stat"><div class="stat-val">${lastEntry ? lastEntry.km.toLocaleString('de') : '—'}</div><div class="stat-label">Letzter KM</div></div>
+  `;
+}
+
+function updateFilters(sorted) {
+  const ts = [...new Set(sorted.map(e=>e.tankstelle))].sort();
+  const ss = [...new Set(sorted.map(e=>e.sorte))].sort();
+  const js = [...new Set(sorted.map(e=>e.datum.split('.')[2]))].sort();
+
+  const fT = document.getElementById('filterTankstelle');
+  const cur = fT.value;
+  fT.innerHTML = '<option value="">Alle Tankstellen</option>' + ts.map(t=>`<option ${t===cur?'selected':''}>${t}</option>`).join('');
+
+  const fS = document.getElementById('filterSorte');
+  const curS = fS.value;
+  fS.innerHTML = '<option value="">Alle Sorten</option>' + ss.map(s=>`<option ${s===curS?'selected':''}>${s}</option>`).join('');
+
+  const fJ = document.getElementById('filterJahr');
+  const curJ = fJ.value;
+  fJ.innerHTML = '<option value="">Alle Jahre</option>' + js.map(j=>`<option ${j===curJ?'selected':''}>${j}</option>`).join('');
+}
+
+function applyFilters() { render(); }
+
+function sortBy(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  render();
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+function openAdd() {
+  editIndex = null;
+  vollState = true;
+  document.getElementById('modalTitle').textContent = 'Neue Tankung';
+  document.getElementById('f_km').value = '';
+  document.getElementById('f_liter').value = '';
+  document.getElementById('f_betrag').value = '';
+  document.getElementById('f_ort').value = '';
+  document.getElementById('f_temp').value = '';
+  document.getElementById('f_sorte').value = 'Super E5';
+  renderTsPicker('Nordoel');
+  setTankstelle('Nordoel');
+  // Set current datetime
+  const now = new Date();
+  const dt = now.toISOString().slice(0,16);
+  document.getElementById('f_datetime').value = dt;
+  setVoll(true);
+  document.getElementById('addModal').classList.add('open');
+}
+
+function editEntry(idx) {
+  const e = entries[idx];
+  editIndex = idx;
+  document.getElementById('modalTitle').textContent = 'Eintrag bearbeiten';
+
+  // Reconstruct datetime-local value
+  const parts = e.datum.split('.');
+  const dateStr = parts.length===3 ? `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}` : '';
+  document.getElementById('f_datetime').value = dateStr + (e.uhrzeit ? 'T'+e.uhrzeit : '');
+  document.getElementById('f_km').value = e.km;
+  document.getElementById('f_liter').value = e.liter;
+  document.getElementById('f_betrag').value = e.betrag;
+  document.getElementById('f_ort').value = e.ort;
+  document.getElementById('f_temp').value = e.temp;
+  document.getElementById('f_sorte').value = e.sorte;
+
+  renderTsPicker(e.tankstelle);
+  setTankstelle(e.tankstelle);
+
+  setVoll(e.voll);
+  document.getElementById('addModal').classList.add('open');
+}
+
+function setVoll(v) {
+  vollState = v;
+  document.getElementById('vollYes').className = 'voll-btn' + (v ? ' active-yes' : '');
+  document.getElementById('vollNo').className  = 'voll-btn' + (!v ? ' active-no' : '');
+}
+
+function saveEntry() {
+  const dtVal = document.getElementById('f_datetime').value;
+  if (!dtVal) { toast('Datum fehlt'); return; }
+
+  const dt = new Date(dtVal);
+  const dd = String(dt.getDate()).padStart(2,'0');
+  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const yyyy = dt.getFullYear();
+  const hh = String(dt.getHours()).padStart(2,'0');
+  const min = String(dt.getMinutes()).padStart(2,'0');
+
+  const km = parseFloat(document.getElementById('f_km').value);
+  const liter = parseFloat(document.getElementById('f_liter').value);
+  const betrag = parseFloat(document.getElementById('f_betrag').value);
+
+  if (!km || !liter || !betrag) { toast('KM-Stand, Liter und Betrag erforderlich'); return; }
+
+  const literpreis = liter > 0 ? Math.round(betrag/liter*1000)/1000 : 0;
+
+  const entry = {
+    datum: `${dd}.${mm}.${yyyy}`,
+    uhrzeit: `${hh}:${min}`,
+    km,
+    gefahren: 0, // recalculated
+    liter,
+    tankstelle: document.getElementById('f_tankstelle').value,
+    sorte: document.getElementById('f_sorte').value,
+    voll: vollState,
+    betrag,
+    literpreis,
+    ort: document.getElementById('f_ort').value,
+    verbrauch: '',
+    temp: document.getElementById('f_temp').value,
+  };
+
+  if (editIndex !== null) {
+    entries[editIndex] = entry;
+    toast('Eintrag aktualisiert');
+  } else {
+    entries.push(entry);
+    toast('Eintrag gespeichert');
+  }
+
+  // Recalc gefahren for all sorted entries
+  recalcGefahren();
+  save();
+  closeModals();
+  render();
+}
+
+function recalcGefahren() {
+  const sorted = sortEntries(entries);
+  for (let i = 0; i < sorted.length; i++) {
+    if (i === 0) sorted[i].gefahren = 0;
+    else sorted[i].gefahren = sorted[i].km - sorted[i-1].km;
+  }
+  // Write back (find by ref)
+  sorted.forEach(s => {
+    const orig = entries.find(e => e === s || (e.datum === s.datum && e.km === s.km && e.uhrzeit === s.uhrzeit));
+    if (orig) orig.gefahren = s.gefahren;
+  });
+}
+
+function deleteEntry(idx) {
+  if (!confirm('Eintrag löschen?')) return;
+  entries.splice(idx, 1);
+  recalcGefahren();
+  save();
+  render();
+  toast('Gelöscht');
+}
+
+function closeModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+}
+
+function openImport() {
+  document.getElementById('importModal').classList.add('open');
+}
+
+// ─── CSV Import ───────────────────────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = ev.target.result;
+    const parsed = parseCSV(text);
+    if (!parsed.length) { toast('Keine Daten gefunden'); return; }
+    entries = parsed;
+    recalcGefahren();
+    save();
+    closeModals();
+    render();
+    toast(`${parsed.length} Einträge importiert`);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ─── CSV Export ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  const sorted = sortEntries(entries);
+  calcVerbrauch(sorted);
+
+  const header = 'Datum;Kilometerstand;Gefahren;Liter;Tankstelle;Sorte;Voll;Betrag;Liter Preis ;Uhrzeit;Ort;L;T';
+  const rows = sorted.map(e => [
+    e.datum,
+    e.km,
+    e.gefahren || '',
+    String(e.liter).replace('.', ','),
+    e.tankstelle,
+    e.sorte,
+    e.voll ? '🟢' : '🔴',
+    String(e.betrag).replace('.', ','),
+    String(e.literpreis).replace('.', ','),
+    e.uhrzeit,
+    e.ort,
+    e.verbrauch !== '' ? String(e.verbrauch).replace('.', ',') : '',
+    e.temp !== '' ? e.temp + ' °C' : '',
+  ].join(';'));
+
+  const totalLiter = sorted.reduce((s,e)=>s+e.liter,0);
+  const totalBetrag = sorted.reduce((s,e)=>s+e.betrag,0);
+  const totalKm = sorted.reduce((s,e)=>s+e.gefahren,0);
+  const sumRow = `;;${totalKm};${totalLiter.toFixed(2).replace('.',',')};;;;${totalBetrag.toFixed(2).replace('.',',')};;;;;;`;
+
+  const csv = [header, ...rows, sumRow].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'Auris-Verbrauch.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exportiert');
+}
+
+// ─── Temperatur holen ─────────────────────────────────────────────────────────
+async function fetchTemp() {
+  const btn = document.querySelector('.btn-fetch-temp');
+  btn.textContent = '⏳';
+  try {
+    const pos = await new Promise((res,rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000}));
+    const {latitude: lat, longitude: lon} = pos.coords;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const temp = Math.round(d.current_weather.temperature);
+    document.getElementById('f_temp').value = temp;
+    toast(`🌡️ ${temp} °C`);
+  } catch(e) {
+    toast('GPS oder Wetter nicht verfügbar');
+  }
+  btn.textContent = '🌡️ Auto';
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+
+// ─── Tankstellen Logos ────────────────────────────────────────────────────────
+const TANKSTELLEN = [
+  { name: 'Nordoel',  domain: 'nordoel.de',           fallback: '⭐️' },
+  { name: 'Team',     domain: 'team-tankstellen.de',  fallback: '🔷' },
+  { name: 'Aral',     domain: 'aral.de',              fallback: '🔵' },
+  { name: 'Shell',    domain: 'shell.de',             fallback: '🐚' },
+  { name: 'Jet',      domain: 'jet.de',               fallback: '✈️' },
+  { name: 'Star',     domain: 'star-tankstellen.de',  fallback: '⭐' },
+  { name: 'Total',    domain: 'totalenergies.de',     fallback: '🌍' },
+  { name: 'Esso',     domain: 'esso.de',              fallback: '🔴' },
+  { name: 'Markant',  domain: 'markant.de',           fallback: '🛒' },
+  { name: 'Willer',   domain: null,                   fallback: '⛽' },
+  { name: 'Wille',    domain: null,                   fallback: '⛽' },
+  { name: 'Sonstige', domain: null,                   fallback: '❓' },
+];
+
+let logoCache = {};
+
+function loadLogoCache() {
+  try {
+    const d = localStorage.getItem('tankbuch_logos');
+    if (d) logoCache = JSON.parse(d);
+  } catch(e) {}
+}
+
+function saveLogoCache() {
+  try { localStorage.setItem('tankbuch_logos', JSON.stringify(logoCache)); } catch(e) {}
+}
+
+async function fetchLogo(domain) {
+  if (!domain) return null;
+  if (logoCache[domain]) return logoCache[domain];
+  try {
+    const url = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    const r = await fetch(url);
+    const blob = await r.blob();
+    return new Promise(res => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        logoCache[domain] = reader.result;
+        saveLogoCache();
+        res(reader.result);
+      };
+      reader.onerror = () => res(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) { return null; }
+}
+
+function renderTsPicker(selected) {
+  const picker = document.getElementById('tsPicker');
+  picker.innerHTML = TANKSTELLEN.map(ts => `
+    <button type="button" class="ts-btn ${ts.name === selected ? 'selected' : ''}"
+            onclick="setTankstelle('${ts.name}')" id="tsBtn_${ts.name}">
+      <span class="ts-fallback" id="tsIcon_${ts.name}">${ts.fallback}</span>
+      <span>${ts.name}</span>
+    </button>
+  `).join('');
+
+  // Logos asynchron nachladen
+  TANKSTELLEN.forEach(async ts => {
+    if (!ts.domain) return;
+    const data = await fetchLogo(ts.domain);
+    if (!data) return;
+    const icon = document.getElementById('tsIcon_' + ts.name);
+    if (icon) {
+      icon.innerHTML = `<img src="${data}" alt="${ts.name}">`;
+      icon.style.background = 'white';
+      icon.style.padding = '2px';
+    }
+  });
+}
+
+function setTankstelle(name) {
+  document.getElementById('f_tankstelle').value = name;
+  document.querySelectorAll('.ts-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.getElementById('tsBtn_' + name);
+  if (btn) btn.classList.add('selected');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+load();
+loadLogoCache();
+renderTsPicker('Nordoel');
+render();
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) closeModals(); }));
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
