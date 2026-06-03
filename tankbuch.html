@@ -18,6 +18,7 @@
     --accent: #00e5a0;
     --accent2: #0099ff;
     --red: #ff4466;
+    --yellow: #ffaa00;
     --text: #e8e8f0;
     --muted: #666680;
     --mono: 'Space Mono', monospace;
@@ -34,17 +35,21 @@
     overflow-x: hidden;
   }
 
-  /* Header */
+  /* ── Header ── */
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 12px 16px 0;
     position: sticky;
     top: 0;
     z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
   }
 
   .logo {
@@ -81,10 +86,47 @@
 
   .header-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
   }
 
-  /* Buttons */
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: none;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px 8px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Tab panels ── */
+  .panel { display: none; padding: 16px; }
+  .panel.active { display: block; }
+
+  /* ── Buttons ── */
   .btn {
     padding: 8px 14px;
     border-radius: 8px;
@@ -99,10 +141,7 @@
     gap: 6px;
   }
 
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
+  .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: #00ffb3; transform: translateY(-1px); }
 
   .btn-ghost {
@@ -119,144 +158,78 @@
   }
   .btn-danger:hover { border-color: var(--red); }
 
-  /* Stats bar */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border-bottom: 1px solid var(--border);
+  /* ── PANEL 1: Tanken ── */
+  .last-tank-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
   }
 
-  .stat {
-    background: var(--surface);
-    padding: 14px 18px;
+  .last-tank-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .last-tank-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .last-stat {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px 10px;
     text-align: center;
   }
 
-  .stat-val {
+  .last-stat-val {
     font-family: var(--mono);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--accent);
-  }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 2px;
-  }
-
-  /* Main content */
-  main { padding: 20px; max-width: 100%; }
-
-  /* Table wrapper */
-  .table-wrap {
-    overflow-x: auto;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-
-  thead {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  th {
-    padding: 10px 12px;
-    text-align: left;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  th:hover { color: var(--accent); }
-  th.sorted { color: var(--accent); }
-
-  td {
-    padding: 9px 12px;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    font-family: var(--mono);
-    font-size: 11px;
-  }
-
-  tr:last-child td { border-bottom: none; }
-
-  tr:hover td { background: var(--surface2); }
-
-  .td-num { text-align: right; }
-
-  .voll-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-  .voll-yes { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-  .voll-no  { background: var(--red); box-shadow: 0 0 6px var(--red); }
-
-  .verbrauch-cell { color: var(--accent2); }
-  .literpreis-cell { color: #ffaa00; }
-
-  .sum-row td {
-    background: var(--surface2) !important;
-    color: var(--accent);
-    font-weight: 700;
-    border-top: 2px solid var(--border);
-  }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    gap: 4px;
   }
-  .modal-overlay.open { display: flex; }
 
-  .modal {
+  .last-stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 3px;
+  }
+
+  .trend-up   { color: var(--red) !important; }
+  .trend-down { color: var(--accent) !important; }
+  .trend-eq   { color: var(--muted) !important; }
+
+  /* Form card */
+  .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 24px;
+    border-radius: 12px;
+    padding: 16px;
   }
 
-  .modal-title {
+  .form-card-title {
     font-family: var(--mono);
-    font-size: 14px;
+    font-size: 10px;
     color: var(--accent);
-    letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-
-  .form-row {
+    letter-spacing: 1px;
     margin-bottom: 14px;
   }
+
+  .form-row { margin-bottom: 12px; }
 
   label {
     display: block;
@@ -280,19 +253,15 @@
     transition: border-color 0.15s;
   }
   input:focus, select:focus { border-color: var(--accent); }
-
   select option { background: var(--bg); }
 
   .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
-  .voll-toggle {
-    display: flex;
-    gap: 8px;
-  }
+  .voll-toggle { display: flex; gap: 8px; }
 
   .voll-btn {
     flex: 1;
@@ -302,18 +271,13 @@
     background: transparent;
     color: var(--muted);
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
     transition: all 0.15s;
   }
   .voll-btn.active-yes { border-color: var(--accent); background: rgba(0,229,160,0.1); }
   .voll-btn.active-no  { border-color: var(--red); background: rgba(255,68,102,0.1); }
 
-  .temp-row {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-  }
-
+  .temp-row { display: flex; gap: 8px; align-items: flex-end; }
   .temp-row input { flex: 1; }
 
   .btn-fetch-temp {
@@ -330,91 +294,13 @@
   }
   .btn-fetch-temp:hover { border-color: var(--accent2); color: var(--accent2); }
 
-  .modal-footer {
+  .form-actions {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 16px;
+    margin-top: 14px;
+    padding-top: 12px;
     border-top: 1px solid var(--border);
-  }
-
-  /* Import area */
-  .import-area {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    margin-bottom: 16px;
-  }
-  .import-area:hover, .import-area.drag { border-color: var(--accent); }
-
-  .import-area p { font-size: 13px; color: var(--muted); margin-top: 8px; }
-
-  /* Empty state */
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty p { font-size: 14px; }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 12px 18px;
-    font-size: 13px;
-    color: var(--accent);
-    z-index: 999;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  /* Filters */
-  .filters {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-
-  .filter-select {
-    padding: 7px 10px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .search-input {
-    padding: 7px 12px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 12px;
-    width: 160px;
-  }
-  .search-input:focus { border-color: var(--accent); outline: none; }
-
-  @media (max-width: 600px) {
-    .stat-val { font-size: 14px; }
-    .header-actions { gap: 4px; }
-    .btn { padding: 7px 10px; font-size: 12px; }
-    .form-grid { grid-template-columns: 1fr; }
   }
 
   /* Tankstellen-Picker */
@@ -422,6 +308,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
+    margin-top: 4px;
   }
   .ts-btn {
     display: flex;
@@ -461,75 +348,375 @@
     color: var(--text);
   }
   .ts-btn:hover { border-color: var(--accent2); }
+
+  /* ── PANEL 2: Tabelle ── */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .filter-select, .search-input {
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input { width: 150px; }
+  .search-input:focus, .filter-select:focus { border-color: var(--accent); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 10px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { color: var(--accent); }
+  th.sorted { color: var(--accent); }
+
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .td-num { text-align: right; }
+
+  .voll-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .voll-yes { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .voll-no  { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+  .verbrauch-cell { color: var(--accent2); }
+  .literpreis-cell { color: var(--yellow); }
+
+  .sum-row td {
+    background: var(--surface2) !important;
+    color: var(--accent);
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* ── PANEL 3: Statistik ── */
+  .stats-overview {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-card-val {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-card-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 4px;
+  }
+
+  .stat-card.blue .stat-card-val { color: var(--accent2); }
+  .stat-card.yellow .stat-card-val { color: var(--yellow); }
+  .stat-card.red .stat-card-val { color: var(--red); }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 16px 0 8px;
+  }
+
+  .period-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .period-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .period-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+
+  .period-select {
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+  .period-select:focus { border-color: var(--accent); }
+
+  .period-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .mini-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .mini-stat-val {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .mini-stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
+  }
+
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .breakdown-table th {
+    background: var(--surface2);
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: left;
+    cursor: default;
+  }
+
+  .breakdown-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .breakdown-table tr:last-child td { border-bottom: none; }
+  .breakdown-table tr:hover td { background: var(--surface2); }
+  .breakdown-table .td-num { text-align: right; }
+
+  /* ── Modal (Import) ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .import-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 16px;
+  }
+  .import-area:hover, .import-area.drag { border-color: var(--accent); }
+  .import-area p { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--accent);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 600px) {
+    .stats-overview { grid-template-columns: repeat(2, 1fr); }
+    .last-tank-grid { grid-template-columns: repeat(3, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .period-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .tab { font-size: 12px; padding: 10px 4px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">
-    <div class="logo-icon">⛽</div>
-    <div>
-      <div class="logo-text">Tankbuch</div>
-      <div class="logo-sub">Toyota Auris Hybrid</div>
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">⛽</div>
+      <div>
+        <div class="logo-text">Tankbuch</div>
+        <div class="logo-sub">Toyota Auris Hybrid</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openImport()">📂</button>
+      <button class="btn btn-ghost" onclick="exportCSV()">💾</button>
     </div>
   </div>
-  <div class="header-actions">
-    <button class="btn btn-ghost" onclick="openImport()">📂 Import</button>
-    <button class="btn btn-ghost" onclick="exportCSV()">💾 Export</button>
-    <button class="btn btn-primary" onclick="openAdd()">+ Tanken</button>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('tanken')" id="tab-tanken">⛽ Tanken</button>
+    <button class="tab" onclick="switchTab('tabelle')" id="tab-tabelle">📋 Tabelle</button>
+    <button class="tab" onclick="switchTab('statistik')" id="tab-statistik">📊 Statistik</button>
   </div>
 </header>
 
-<div class="stats-bar" id="statsBar"></div>
+<!-- ═══════════════════════════════════════════════════════
+     PANEL 1: TANKEN
+═══════════════════════════════════════════════════════ -->
+<div class="panel active" id="panel-tanken">
 
-<main>
-  <div class="filters">
-    <input class="search-input" type="text" placeholder="🔍 Suchen..." oninput="applyFilters()" id="searchInput">
-    <select class="filter-select" onchange="applyFilters()" id="filterTankstelle">
-      <option value="">Alle Tankstellen</option>
-    </select>
-    <select class="filter-select" onchange="applyFilters()" id="filterSorte">
-      <option value="">Alle Sorten</option>
-    </select>
-    <select class="filter-select" onchange="applyFilters()" id="filterJahr">
-      <option value="">Alle Jahre</option>
-    </select>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th onclick="sortBy('datum')">Datum</th>
-          <th onclick="sortBy('km')">KM-Stand</th>
-          <th onclick="sortBy('gefahren')" class="td-num">Gefahren</th>
-          <th onclick="sortBy('liter')" class="td-num">Liter</th>
-          <th onclick="sortBy('tankstelle')">Tankstelle</th>
-          <th onclick="sortBy('sorte')">Sorte</th>
-          <th>Voll</th>
-          <th onclick="sortBy('betrag')" class="td-num">Betrag</th>
-          <th onclick="sortBy('literpreis')" class="td-num">€/L</th>
-          <th>Uhrzeit</th>
-          <th>Ort</th>
-          <th onclick="sortBy('verbrauch')" class="td-num">L/100km</th>
-          <th onclick="sortBy('temp')" class="td-num">°C</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-      <tfoot id="tableFoot"></tfoot>
-    </table>
-    <div class="empty" id="emptyState" style="display:none">
-      <div class="empty-icon">⛽</div>
-      <p>Noch keine Einträge. Importiere deine CSV oder füge einen Eintrag hinzu.</p>
+  <!-- Letzte Tankung Übersicht -->
+  <div class="last-tank-card" id="lastTankCard">
+    <div class="last-tank-title">Letzte Tankung</div>
+    <div class="last-tank-grid" id="lastTankGrid">
+      <div class="last-stat">
+        <div class="last-stat-val" id="lt-datum">—</div>
+        <div class="last-stat-label">Datum</div>
+      </div>
+      <div class="last-stat">
+        <div class="last-stat-val" id="lt-km">—</div>
+        <div class="last-stat-label">Gefahren km</div>
+      </div>
+      <div class="last-stat">
+        <div class="last-stat-val" id="lt-verbrauch">—</div>
+        <div class="last-stat-label">L/100km</div>
+      </div>
     </div>
   </div>
-</main>
 
-<!-- Add/Edit Modal -->
-<div class="modal-overlay" id="addModal">
-  <div class="modal">
-    <div class="modal-title" id="modalTitle">Neue Tankung</div>
+  <!-- Neuen Eintrag Formular -->
+  <div class="form-card">
+    <div class="form-card-title" id="formCardTitle">+ Neue Tankung</div>
 
     <div class="form-row">
       <label>Datum & Uhrzeit</label>
@@ -590,10 +777,86 @@
       </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModals()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="saveEntry()">Speichern</button>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Abbrechen</button>
+      <button class="btn btn-primary" onclick="saveEntry()" id="saveBtn">Speichern</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PANEL 2: TABELLE
+═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-tabelle">
+  <div class="filters">
+    <input class="search-input" type="text" placeholder="🔍 Suchen..." oninput="applyFilters()" id="searchInput">
+    <select class="filter-select" onchange="applyFilters()" id="filterTankstelle">
+      <option value="">Alle Tankstellen</option>
+    </select>
+    <select class="filter-select" onchange="applyFilters()" id="filterSorte">
+      <option value="">Alle Sorten</option>
+    </select>
+    <select class="filter-select" onchange="applyFilters()" id="filterJahr">
+      <option value="">Alle Jahre</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('datum')">Datum</th>
+          <th onclick="sortBy('km')">KM-Stand</th>
+          <th onclick="sortBy('gefahren')" class="td-num">Gefahren</th>
+          <th onclick="sortBy('liter')" class="td-num">Liter</th>
+          <th onclick="sortBy('tankstelle')">Tankstelle</th>
+          <th onclick="sortBy('sorte')">Sorte</th>
+          <th>Voll</th>
+          <th onclick="sortBy('betrag')" class="td-num">Betrag</th>
+          <th onclick="sortBy('literpreis')" class="td-num">€/L</th>
+          <th>Uhrzeit</th>
+          <th>Ort</th>
+          <th onclick="sortBy('verbrauch')" class="td-num">L/100km</th>
+          <th onclick="sortBy('temp')" class="td-num">°C</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot"></tfoot>
+    </table>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="empty-icon">⛽</div>
+      <p>Noch keine Einträge. Importiere deine CSV oder füge einen Eintrag hinzu.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PANEL 3: STATISTIK
+═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-statistik">
+
+  <!-- Gesamt-Übersicht -->
+  <div class="section-title">Gesamt</div>
+  <div class="stats-overview" id="gesamtStats"></div>
+
+  <!-- Periode wählen -->
+  <div class="section-title">Aufschlüsselung</div>
+  <div class="period-tabs">
+    <button class="period-btn active" onclick="setPeriod('jahr')" id="pbJahr">Nach Jahr</button>
+    <button class="period-btn" onclick="setPeriod('monat')" id="pbMonat">Nach Monat</button>
+  </div>
+  <select class="period-select" id="periodSelect" onchange="renderPeriodStats()">
+    <option value="">Alle</option>
+  </select>
+
+  <div class="period-stats-grid" id="periodMiniStats"></div>
+
+  <div class="breakdown-table-wrap">
+    <table class="breakdown-table" id="breakdownTable">
+      <thead id="breakdownHead"></thead>
+      <tbody id="breakdownBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -626,6 +889,18 @@ let editIndex = null;
 let vollState = true;
 let sortKey = 'datum';
 let sortDir = 1;
+let activePeriod = 'jahr'; // 'jahr' | 'monat'
+let activeTab = 'tanken';
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  ['tanken','tabelle','statistik'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === tab);
+    document.getElementById('panel-'+t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'statistik') renderStatistik();
+}
 
 // ─── Storage ─────────────────────────────────────────────────────────────────
 function save() {
@@ -641,7 +916,6 @@ function load() {
 // ─── CSV Parse ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  // skip header, skip last summary row
   const result = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(';');
@@ -650,35 +924,32 @@ function parseCSV(text) {
     const km = parseFloat(cols[1]) || 0;
     if (!datum || !km) continue;
 
-    // Temperatur: letzte Spalte, kann "3 °C" oder "-1 °C" oder leer sein
     let temp = '';
     const rawTemp = (cols[12] || '').trim();
     const tempMatch = rawTemp.match(/-?\d+/);
     if (tempMatch) temp = tempMatch[0];
 
-    // Voll: 🟢 oder 🔴
     const vollRaw = (cols[6] || '').trim();
     const voll = vollRaw.includes('🟢');
 
-    // Verbrauch: Spalte 11 (L/100km), kann Emoji sein
     let verbrauch = '';
     const vRaw = (cols[11] || '').trim().replace(',', '.');
     if (!isNaN(parseFloat(vRaw))) verbrauch = parseFloat(vRaw);
 
     result.push({
-      datum: datum,
+      datum,
       uhrzeit: (cols[9] || '').trim(),
-      km: km,
+      km,
       gefahren: parseFloat((cols[2] || '').replace(',', '.')) || 0,
       liter: parseFloat((cols[3] || '').replace(',', '.')) || 0,
       tankstelle: (cols[4] || '').trim(),
       sorte: (cols[5] || '').trim(),
-      voll: voll,
+      voll,
       betrag: parseFloat((cols[7] || '').replace(',', '.')) || 0,
       literpreis: parseFloat((cols[8] || '').replace(',', '.')) || 0,
       ort: (cols[10] || '').trim(),
-      verbrauch: verbrauch,
-      temp: temp,
+      verbrauch,
+      temp,
     });
   }
   return result;
@@ -686,7 +957,6 @@ function parseCSV(text) {
 
 // ─── Sort & Calc ─────────────────────────────────────────────────────────────
 function parseDate(d) {
-  // dd.mm.yyyy
   const p = d.split('.');
   if (p.length === 3) return new Date(+p[2], +p[1]-1, +p[0]);
   return new Date(d);
@@ -694,30 +964,27 @@ function parseDate(d) {
 
 function sortEntries(arr) {
   return [...arr].sort((a, b) => {
-    let va, vb;
-    if (sortKey === 'datum') { va = parseDate(a.datum); vb = parseDate(b.datum); return (va-vb)*sortDir; }
-    if (sortKey === 'km') return (a.km - b.km)*sortDir;
-    if (sortKey === 'gefahren') return (a.gefahren - b.gefahren)*sortDir;
-    if (sortKey === 'liter') return (a.liter - b.liter)*sortDir;
-    if (sortKey === 'betrag') return (a.betrag - b.betrag)*sortDir;
-    if (sortKey === 'literpreis') return (a.literpreis - b.literpreis)*sortDir;
-    if (sortKey === 'verbrauch') return ((+a.verbrauch||0) - (+b.verbrauch||0))*sortDir;
-    if (sortKey === 'temp') return ((+a.temp||0) - (+b.temp||0))*sortDir;
-    if (sortKey === 'tankstelle') return a.tankstelle.localeCompare(b.tankstelle)*sortDir;
-    if (sortKey === 'sorte') return a.sorte.localeCompare(b.sorte)*sortDir;
+    if (sortKey === 'datum') return (parseDate(a.datum) - parseDate(b.datum)) * sortDir;
+    if (sortKey === 'km') return (a.km - b.km) * sortDir;
+    if (sortKey === 'gefahren') return (a.gefahren - b.gefahren) * sortDir;
+    if (sortKey === 'liter') return (a.liter - b.liter) * sortDir;
+    if (sortKey === 'betrag') return (a.betrag - b.betrag) * sortDir;
+    if (sortKey === 'literpreis') return (a.literpreis - b.literpreis) * sortDir;
+    if (sortKey === 'verbrauch') return ((+a.verbrauch||0) - (+b.verbrauch||0)) * sortDir;
+    if (sortKey === 'temp') return ((+a.temp||0) - (+b.temp||0)) * sortDir;
+    if (sortKey === 'tankstelle') return a.tankstelle.localeCompare(b.tankstelle) * sortDir;
+    if (sortKey === 'sorte') return a.sorte.localeCompare(b.sorte) * sortDir;
     return 0;
   });
 }
 
 function calcVerbrauch(sorted) {
-  // Recalculate Verbrauch for full-tank-to-full-tank pairs
   let lastFull = null;
   for (let i = 0; i < sorted.length; i++) {
     const e = sorted[i];
     if (!e.voll) { e.verbrauch = ''; continue; }
     if (lastFull !== null) {
       const km = e.km - sorted[lastFull].km;
-      // sum liters between lastFull (exclusive) and i (inclusive)
       let liters = 0;
       for (let j = lastFull+1; j <= i; j++) liters += sorted[j].liter;
       e.verbrauch = km > 0 ? (liters / km * 100).toFixed(2) : '';
@@ -728,7 +995,7 @@ function calcVerbrauch(sorted) {
   }
 }
 
-// ─── Render ──────────────────────────────────────────────────────────────────
+// ─── Render Table ─────────────────────────────────────────────────────────────
 function render() {
   const search = document.getElementById('searchInput').value.toLowerCase();
   const fT = document.getElementById('filterTankstelle').value;
@@ -738,8 +1005,7 @@ function render() {
   let sorted = sortEntries(entries);
   calcVerbrauch(sorted);
 
-  // map original indices before filtering
-  let filtered = sorted.map((e, i) => ({...e, _orig: entries.indexOf(e)}));
+  let filtered = sorted.map(e => ({...e, _orig: entries.indexOf(e)}));
 
   if (search) filtered = filtered.filter(e =>
     Object.values(e).join(' ').toLowerCase().includes(search));
@@ -754,78 +1020,88 @@ function render() {
     tbody.innerHTML = '';
     empty.style.display = 'block';
     document.getElementById('tableFoot').innerHTML = '';
-    renderStats([]);
+  } else {
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(e => `
+      <tr>
+        <td>${e.datum}</td>
+        <td class="td-num">${e.km.toLocaleString('de')}</td>
+        <td class="td-num">${e.gefahren ? e.gefahren.toLocaleString('de') + ' km' : ''}</td>
+        <td class="td-num">${e.liter ? e.liter.toFixed(2) + ' L' : ''}</td>
+        <td>${e.tankstelle}</td>
+        <td>${e.sorte}</td>
+        <td style="text-align:center"><span class="voll-dot ${e.voll ? 'voll-yes' : 'voll-no'}"></span></td>
+        <td class="td-num">${e.betrag ? e.betrag.toFixed(2) + ' €' : ''}</td>
+        <td class="td-num literpreis-cell">${e.literpreis ? e.literpreis.toFixed(3) + ' €' : ''}</td>
+        <td>${e.uhrzeit}</td>
+        <td>${e.ort}</td>
+        <td class="td-num verbrauch-cell">${e.verbrauch !== '' ? e.verbrauch : '—'}</td>
+        <td class="td-num">${e.temp !== '' ? e.temp + ' °C' : '—'}</td>
+        <td>
+          <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editEntry(${e._orig})">✏️</button>
+          <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteEntry(${e._orig})">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+
+    const totalLiter = filtered.reduce((s,e) => s + e.liter, 0);
+    const totalBetrag = filtered.reduce((s,e) => s + e.betrag, 0);
+    const totalKm = filtered.reduce((s,e) => s + e.gefahren, 0);
+    const avgV = filtered.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+    const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
+
+    document.getElementById('tableFoot').innerHTML = `
+      <tr class="sum-row">
+        <td colspan="2">Σ ${filtered.length} Einträge</td>
+        <td class="td-num">${totalKm.toLocaleString('de')} km</td>
+        <td class="td-num">${totalLiter.toFixed(2)} L</td>
+        <td colspan="3"></td>
+        <td class="td-num">${totalBetrag.toFixed(2)} €</td>
+        <td class="td-num">${totalLiter > 0 ? (totalBetrag/totalLiter).toFixed(3)+' €' : ''}</td>
+        <td colspan="3" class="td-num">${avgVerbrauch !== '—' ? avgVerbrauch+' L/100' : '—'}</td>
+        <td colspan="2"></td>
+      </tr>
+    `;
+  }
+
+  updateFilters(sorted);
+  renderLastTank(sorted);
+}
+
+// ─── Last Tank Card ───────────────────────────────────────────────────────────
+function renderLastTank(sorted) {
+  if (!sorted.length) {
+    document.getElementById('lt-datum').textContent = '—';
+    document.getElementById('lt-km').textContent = '—';
+    document.getElementById('lt-verbrauch').innerHTML = '—';
     return;
   }
-  empty.style.display = 'none';
 
-  tbody.innerHTML = filtered.map((e, i) => `
-    <tr>
-      <td>${e.datum}</td>
-      <td class="td-num">${e.km.toLocaleString('de')}</td>
-      <td class="td-num">${e.gefahren ? e.gefahren.toLocaleString('de') + ' km' : ''}</td>
-      <td class="td-num">${e.liter ? e.liter.toFixed(2) + ' L' : ''}</td>
-      <td>${e.tankstelle}</td>
-      <td>${e.sorte}</td>
-      <td style="text-align:center"><span class="voll-dot ${e.voll ? 'voll-yes' : 'voll-no'}"></span></td>
-      <td class="td-num">${e.betrag ? e.betrag.toFixed(2) + ' €' : ''}</td>
-      <td class="td-num literpreis-cell">${e.literpreis ? e.literpreis.toFixed(3) + ' €' : ''}</td>
-      <td>${e.uhrzeit}</td>
-      <td>${e.ort}</td>
-      <td class="td-num verbrauch-cell">${e.verbrauch !== '' ? e.verbrauch : '—'}</td>
-      <td class="td-num">${e.temp !== '' ? e.temp + ' °C' : '—'}</td>
-      <td>
-        <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="editEntry(${e._orig})">✏️</button>
-        <button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteEntry(${e._orig})">🗑</button>
-      </td>
-    </tr>
-  `).join('');
+  const last = sorted[sorted.length - 1];
+  const prev = sorted.length >= 2 ? sorted[sorted.length - 2] : null;
 
-  // Summary row
-  const totalLiter = filtered.reduce((s,e) => s + e.liter, 0);
-  const totalBetrag = filtered.reduce((s,e) => s + e.betrag, 0);
-  const totalKm = filtered.reduce((s,e) => s + e.gefahren, 0);
-  const avgV = filtered.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
-  const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
+  document.getElementById('lt-datum').textContent = last.datum;
+  document.getElementById('lt-km').textContent = last.gefahren ? last.gefahren.toLocaleString('de') + ' km' : '—';
 
-  document.getElementById('tableFoot').innerHTML = `
-    <tr class="sum-row">
-      <td colspan="2">Σ ${filtered.length} Einträge</td>
-      <td class="td-num">${totalKm.toLocaleString('de')} km</td>
-      <td class="td-num">${totalLiter.toFixed(2)} L</td>
-      <td colspan="3"></td>
-      <td class="td-num">${totalBetrag.toFixed(2)} €</td>
-      <td class="td-num">${totalLiter > 0 ? (totalBetrag/totalLiter).toFixed(3)+' €' : ''}</td>
-      <td colspan="3" class="td-num">${avgVerbrauch !== '—' ? avgVerbrauch+' L/100' : '—'}</td>
-      <td colspan="2"></td>
-    </tr>
-  `;
-
-  renderStats(filtered);
-  updateFilters(sorted);
+  // Verbrauch mit Trend-Pfeil
+  let vHtml = '—';
+  if (last.verbrauch !== '' && last.verbrauch !== undefined) {
+    const v = parseFloat(last.verbrauch);
+    let arrow = '';
+    let cls = 'trend-eq';
+    if (prev && prev.verbrauch !== '' && prev.verbrauch !== undefined) {
+      const vp = parseFloat(prev.verbrauch);
+      if (v > vp + 0.1) { arrow = ' ▲'; cls = 'trend-up'; }
+      else if (v < vp - 0.1) { arrow = ' ▼'; cls = 'trend-down'; }
+      else { arrow = ' ●'; cls = 'trend-eq'; }
+    }
+    vHtml = `<span class="${cls}">${v.toFixed(2)}<small>${arrow}</small></span>`;
+  }
+  document.getElementById('lt-verbrauch').innerHTML = vHtml;
 }
 
-function renderStats(data) {
-  const totalLiter = data.reduce((s,e) => s + e.liter, 0);
-  const totalBetrag = data.reduce((s,e) => s + e.betrag, 0);
-  const totalKm = data.reduce((s,e) => s + e.gefahren, 0);
-  const avgV = data.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
-  const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
-  const lastEntry = data[data.length-1];
-  const avgPreis = data.filter(e=>e.literpreis).map(e=>e.literpreis);
-  const avgLP = avgPreis.length ? (avgPreis.reduce((a,b)=>a+b,0)/avgPreis.length).toFixed(3) : '—';
-
-  document.getElementById('statsBar').innerHTML = `
-    <div class="stat"><div class="stat-val">${data.length}</div><div class="stat-label">Tankungen</div></div>
-    <div class="stat"><div class="stat-val">${totalKm > 0 ? totalKm.toLocaleString('de') : '—'}</div><div class="stat-label">km gesamt</div></div>
-    <div class="stat"><div class="stat-val">${totalLiter.toFixed(1)} L</div><div class="stat-label">Liter gesamt</div></div>
-    <div class="stat"><div class="stat-val">${totalBetrag.toFixed(2)} €</div><div class="stat-label">Kosten gesamt</div></div>
-    <div class="stat"><div class="stat-val">${avgVerbrauch}</div><div class="stat-label">Ø L/100km</div></div>
-    <div class="stat"><div class="stat-val">${avgLP} €</div><div class="stat-label">Ø €/Liter</div></div>
-    <div class="stat"><div class="stat-val">${lastEntry ? lastEntry.km.toLocaleString('de') : '—'}</div><div class="stat-label">Letzter KM</div></div>
-  `;
-}
-
+// ─── Filters ─────────────────────────────────────────────────────────────────
 function updateFilters(sorted) {
   const ts = [...new Set(sorted.map(e=>e.tankstelle))].sort();
   const ss = [...new Set(sorted.map(e=>e.sorte))].sort();
@@ -852,11 +1128,241 @@ function sortBy(key) {
   render();
 }
 
-// ─── Modal ───────────────────────────────────────────────────────────────────
-function openAdd() {
+// ─── Statistik ────────────────────────────────────────────────────────────────
+function renderStatistik() {
+  const sorted = sortEntries(entries);
+  calcVerbrauch(sorted);
+
+  // Gesamt
+  const totalLiter = sorted.reduce((s,e) => s+e.liter, 0);
+  const totalBetrag = sorted.reduce((s,e) => s+e.betrag, 0);
+  const totalKm = sorted.reduce((s,e) => s+e.gefahren, 0);
+  const avgV = sorted.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+  const avgVerbrauch = avgV.length ? (avgV.reduce((a,b)=>a+b,0)/avgV.length).toFixed(2) : '—';
+  const avgLP = sorted.filter(e=>e.literpreis).map(e=>e.literpreis);
+  const avgLPVal = avgLP.length ? (avgLP.reduce((a,b)=>a+b,0)/avgLP.length).toFixed(3) : '—';
+
+  // Durchschn. km / Monat
+  let avgKmMonat = '—';
+  if (sorted.length >= 2) {
+    const d1 = parseDate(sorted[0].datum);
+    const d2 = parseDate(sorted[sorted.length-1].datum);
+    const monate = (d2.getFullYear()-d1.getFullYear())*12 + (d2.getMonth()-d1.getMonth()) || 1;
+    avgKmMonat = Math.round(totalKm / monate).toLocaleString('de');
+  }
+
+  document.getElementById('gesamtStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-val">${sorted.length}</div>
+      <div class="stat-card-label">Tankungen</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-val">${totalKm > 0 ? totalKm.toLocaleString('de') : '—'}</div>
+      <div class="stat-card-label">km gesamt</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-val">${totalLiter.toFixed(0)} L</div>
+      <div class="stat-card-label">Liter gesamt</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-card-val">${totalBetrag.toFixed(0)} €</div>
+      <div class="stat-card-label">Kosten gesamt</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-val">${avgVerbrauch}</div>
+      <div class="stat-card-label">Ø L/100km</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-card-val">${avgLPVal} €</div>
+      <div class="stat-card-label">Ø €/Liter</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-val">${avgKmMonat}</div>
+      <div class="stat-card-label">Ø km/Monat</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-val">${sorted.length ? sorted[sorted.length-1].km.toLocaleString('de') : '—'}</div>
+      <div class="stat-card-label">Letzter KM</div>
+    </div>
+  `;
+
+  renderPeriodOptions(sorted);
+  renderPeriodStats();
+}
+
+function setPeriod(p) {
+  activePeriod = p;
+  document.getElementById('pbJahr').classList.toggle('active', p === 'jahr');
+  document.getElementById('pbMonat').classList.toggle('active', p === 'monat');
+  const sorted = sortEntries(entries);
+  renderPeriodOptions(sorted);
+  renderPeriodStats();
+}
+
+function renderPeriodOptions(sorted) {
+  const sel = document.getElementById('periodSelect');
+  const cur = sel.value;
+  let options = [];
+
+  if (activePeriod === 'jahr') {
+    options = [...new Set(sorted.map(e => e.datum.split('.')[2]))].sort().reverse();
+  } else {
+    const seen = new Set();
+    sorted.slice().reverse().forEach(e => {
+      const p = e.datum.split('.');
+      if (p.length === 3) seen.add(p[1]+'.'+p[2]);
+    });
+    options = [...seen];
+  }
+
+  sel.innerHTML = '<option value="">Alle</option>' + options.map(o=>`<option ${o===cur?'selected':''}>${o}</option>`).join('');
+}
+
+const MONAT_NAMES = ['','Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+function renderPeriodStats() {
+  const sorted = sortEntries(entries);
+  calcVerbrauch(sorted);
+
+  const sel = document.getElementById('periodSelect').value;
+
+  // Group data
+  let groups = {};
+  sorted.forEach(e => {
+    const p = e.datum.split('.');
+    if (p.length < 3) return;
+    const jahr = p[2], monat = p[1];
+    const key = activePeriod === 'jahr' ? jahr : monat+'.'+jahr;
+    if (sel && key !== sel) return;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  // If "Alle" selected, show period summary table
+  const keys = Object.keys(groups).sort((a,b) => {
+    if (activePeriod === 'jahr') return b.localeCompare(a);
+    const [ma,ya] = a.split('.');
+    const [mb,yb] = b.split('.');
+    return new Date(yb, mb-1) - new Date(ya, ma-1);
+  });
+
+  if (sel) {
+    // Show mini stats for selected period
+    const data = groups[sel] || [];
+    const km = data.reduce((s,e)=>s+e.gefahren,0);
+    const liter = data.reduce((s,e)=>s+e.liter,0);
+    const betrag = data.reduce((s,e)=>s+e.betrag,0);
+    const avV = data.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+    const avgVer = avV.length ? (avV.reduce((a,b)=>a+b,0)/avV.length).toFixed(2) : '—';
+    const lps = data.filter(e=>e.literpreis).map(e=>e.literpreis);
+    const avgLp = lps.length ? (lps.reduce((a,b)=>a+b,0)/lps.length).toFixed(3) : '—';
+
+    document.getElementById('periodMiniStats').innerHTML = `
+      <div class="mini-stat"><div class="mini-stat-val">${data.length}</div><div class="mini-stat-label">Tankungen</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--accent2)">${km.toLocaleString('de')}</div><div class="mini-stat-label">km gefahren</div></div>
+      <div class="mini-stat"><div class="mini-stat-val">${liter.toFixed(1)} L</div><div class="mini-stat-label">Liter</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--yellow)">${betrag.toFixed(2)} €</div><div class="mini-stat-label">Kosten</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--accent2)">${avgVer}</div><div class="mini-stat-label">Ø L/100km</div></div>
+      <div class="mini-stat"><div class="mini-stat-val" style="color:var(--yellow)">${avgLp} €</div><div class="mini-stat-label">Ø €/Liter</div></div>
+    `;
+
+    // Detail table for selected period (monthly breakdown if year, or entries if month)
+    if (activePeriod === 'jahr') {
+      // Show monthly breakdown within the year
+      let mGroups = {};
+      data.forEach(e => {
+        const m = e.datum.split('.')[1];
+        if (!mGroups[m]) mGroups[m] = [];
+        mGroups[m].push(e);
+      });
+      const mKeys = Object.keys(mGroups).sort((a,b) => +b - +a);
+
+      document.getElementById('breakdownHead').innerHTML = `<tr><th>Monat</th><th>Tank.</th><th class="td-num">km</th><th class="td-num">Liter</th><th class="td-num">Kosten</th><th class="td-num">Ø L/100</th><th class="td-num">Ø €/L</th></tr>`;
+      document.getElementById('breakdownBody').innerHTML = mKeys.map(m => {
+        const d = mGroups[m];
+        const km = d.reduce((s,e)=>s+e.gefahren,0);
+        const liter = d.reduce((s,e)=>s+e.liter,0);
+        const betrag = d.reduce((s,e)=>s+e.betrag,0);
+        const avV = d.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+        const avgVer = avV.length ? (avV.reduce((a,b)=>a+b,0)/avV.length).toFixed(2) : '—';
+        const lps = d.filter(e=>e.literpreis).map(e=>e.literpreis);
+        const avgLp = lps.length ? (lps.reduce((a,b)=>a+b,0)/lps.length).toFixed(3) : '—';
+        return `<tr>
+          <td>${MONAT_NAMES[+m] || m}</td>
+          <td>${d.length}</td>
+          <td class="td-num" style="color:var(--accent2)">${km.toLocaleString('de')}</td>
+          <td class="td-num">${liter.toFixed(1)}</td>
+          <td class="td-num" style="color:var(--yellow)">${betrag.toFixed(2)} €</td>
+          <td class="td-num" style="color:var(--accent2)">${avgVer}</td>
+          <td class="td-num" style="color:var(--yellow)">${avgLp}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      // Show individual entries for the month
+      document.getElementById('breakdownHead').innerHTML = `<tr><th>Datum</th><th>Tankstelle</th><th class="td-num">km</th><th class="td-num">Liter</th><th class="td-num">Betrag</th><th class="td-num">L/100</th></tr>`;
+      document.getElementById('breakdownBody').innerHTML = data.map(e => `
+        <tr>
+          <td>${e.datum}</td>
+          <td>${e.tankstelle}</td>
+          <td class="td-num" style="color:var(--accent2)">${e.gefahren ? e.gefahren.toLocaleString('de')+' km' : '—'}</td>
+          <td class="td-num">${e.liter.toFixed(2)} L</td>
+          <td class="td-num" style="color:var(--yellow)">${e.betrag.toFixed(2)} €</td>
+          <td class="td-num" style="color:var(--accent2)">${e.verbrauch !== '' ? e.verbrauch : '—'}</td>
+        </tr>
+      `).join('');
+    }
+  } else {
+    // Show all periods summary
+    document.getElementById('periodMiniStats').innerHTML = '';
+
+    if (activePeriod === 'jahr') {
+      document.getElementById('breakdownHead').innerHTML = `<tr><th>Jahr</th><th>Tank.</th><th class="td-num">km</th><th class="td-num">Liter</th><th class="td-num">Kosten</th><th class="td-num">Ø L/100</th><th class="td-num">Ø €/L</th><th class="td-num">Ø km/Mo</th></tr>`;
+    } else {
+      document.getElementById('breakdownHead').innerHTML = `<tr><th>Monat</th><th>Tank.</th><th class="td-num">km</th><th class="td-num">Liter</th><th class="td-num">Kosten</th><th class="td-num">Ø L/100</th><th class="td-num">Ø €/L</th></tr>`;
+    }
+
+    document.getElementById('breakdownBody').innerHTML = keys.map(key => {
+      const d = groups[key];
+      const km = d.reduce((s,e)=>s+e.gefahren,0);
+      const liter = d.reduce((s,e)=>s+e.liter,0);
+      const betrag = d.reduce((s,e)=>s+e.betrag,0);
+      const avV = d.filter(e=>e.verbrauch!=='').map(e=>+e.verbrauch);
+      const avgVer = avV.length ? (avV.reduce((a,b)=>a+b,0)/avV.length).toFixed(2) : '—';
+      const lps = d.filter(e=>e.literpreis).map(e=>e.literpreis);
+      const avgLp = lps.length ? (lps.reduce((a,b)=>a+b,0)/lps.length).toFixed(3) : '—';
+
+      let label = key;
+      if (activePeriod === 'monat') {
+        const [m,y] = key.split('.');
+        label = (MONAT_NAMES[+m] || m) + ' ' + y;
+      }
+
+      let extra = '';
+      if (activePeriod === 'jahr') {
+        const months = [...new Set(d.map(e=>e.datum.split('.')[1]))].length || 1;
+        extra = `<td class="td-num">${Math.round(km/months).toLocaleString('de')}</td>`;
+      }
+
+      return `<tr>
+        <td>${label}</td>
+        <td>${d.length}</td>
+        <td class="td-num" style="color:var(--accent2)">${km.toLocaleString('de')}</td>
+        <td class="td-num">${liter.toFixed(1)}</td>
+        <td class="td-num" style="color:var(--yellow)">${betrag.toFixed(2)} €</td>
+        <td class="td-num" style="color:var(--accent2)">${avgVer}</td>
+        <td class="td-num" style="color:var(--yellow)">${avgLp}</td>
+        ${extra}
+      </tr>`;
+    }).join('');
+  }
+}
+
+// ─── Form: Add / Edit ─────────────────────────────────────────────────────────
+function resetForm() {
   editIndex = null;
   vollState = true;
-  document.getElementById('modalTitle').textContent = 'Neue Tankung';
+  document.getElementById('formCardTitle').textContent = '+ Neue Tankung';
+  document.getElementById('cancelEditBtn').style.display = 'none';
   document.getElementById('f_km').value = '';
   document.getElementById('f_liter').value = '';
   document.getElementById('f_betrag').value = '';
@@ -865,20 +1371,17 @@ function openAdd() {
   document.getElementById('f_sorte').value = 'Super E5';
   renderTsPicker('Nordoel');
   setTankstelle('Nordoel');
-  // Set current datetime
   const now = new Date();
-  const dt = now.toISOString().slice(0,16);
-  document.getElementById('f_datetime').value = dt;
+  document.getElementById('f_datetime').value = now.toISOString().slice(0,16);
   setVoll(true);
-  document.getElementById('addModal').classList.add('open');
 }
 
 function editEntry(idx) {
   const e = entries[idx];
   editIndex = idx;
-  document.getElementById('modalTitle').textContent = 'Eintrag bearbeiten';
+  document.getElementById('formCardTitle').textContent = '✏️ Eintrag bearbeiten';
+  document.getElementById('cancelEditBtn').style.display = '';
 
-  // Reconstruct datetime-local value
   const parts = e.datum.split('.');
   const dateStr = parts.length===3 ? `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}` : '';
   document.getElementById('f_datetime').value = dateStr + (e.uhrzeit ? 'T'+e.uhrzeit : '');
@@ -891,9 +1394,14 @@ function editEntry(idx) {
 
   renderTsPicker(e.tankstelle);
   setTankstelle(e.tankstelle);
-
   setVoll(e.voll);
-  document.getElementById('addModal').classList.add('open');
+
+  switchTab('tanken');
+  window.scrollTo(0, 0);
+}
+
+function cancelEdit() {
+  resetForm();
 }
 
 function setVoll(v) {
@@ -907,14 +1415,14 @@ function saveEntry() {
   if (!dtVal) { toast('Datum fehlt'); return; }
 
   const dt = new Date(dtVal);
-  const dd = String(dt.getDate()).padStart(2,'0');
-  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const dd  = String(dt.getDate()).padStart(2,'0');
+  const mm  = String(dt.getMonth()+1).padStart(2,'0');
   const yyyy = dt.getFullYear();
-  const hh = String(dt.getHours()).padStart(2,'0');
+  const hh  = String(dt.getHours()).padStart(2,'0');
   const min = String(dt.getMinutes()).padStart(2,'0');
 
-  const km = parseFloat(document.getElementById('f_km').value);
-  const liter = parseFloat(document.getElementById('f_liter').value);
+  const km     = parseFloat(document.getElementById('f_km').value);
+  const liter  = parseFloat(document.getElementById('f_liter').value);
   const betrag = parseFloat(document.getElementById('f_betrag').value);
 
   if (!km || !liter || !betrag) { toast('KM-Stand, Liter und Betrag erforderlich'); return; }
@@ -924,14 +1432,11 @@ function saveEntry() {
   const entry = {
     datum: `${dd}.${mm}.${yyyy}`,
     uhrzeit: `${hh}:${min}`,
-    km,
-    gefahren: 0, // recalculated
-    liter,
+    km, gefahren: 0, liter,
     tankstelle: document.getElementById('f_tankstelle').value,
     sorte: document.getElementById('f_sorte').value,
     voll: vollState,
-    betrag,
-    literpreis,
+    betrag, literpreis,
     ort: document.getElementById('f_ort').value,
     verbrauch: '',
     temp: document.getElementById('f_temp').value,
@@ -945,20 +1450,17 @@ function saveEntry() {
     toast('Eintrag gespeichert');
   }
 
-  // Recalc gefahren for all sorted entries
   recalcGefahren();
   save();
-  closeModals();
+  resetForm();
   render();
 }
 
 function recalcGefahren() {
   const sorted = sortEntries(entries);
   for (let i = 0; i < sorted.length; i++) {
-    if (i === 0) sorted[i].gefahren = 0;
-    else sorted[i].gefahren = sorted[i].km - sorted[i-1].km;
+    sorted[i].gefahren = i === 0 ? 0 : sorted[i].km - sorted[i-1].km;
   }
-  // Write back (find by ref)
   sorted.forEach(s => {
     const orig = entries.find(e => e === s || (e.datum === s.datum && e.km === s.km && e.uhrzeit === s.uhrzeit));
     if (orig) orig.gefahren = s.gefahren;
@@ -974,15 +1476,15 @@ function deleteEntry(idx) {
   toast('Gelöscht');
 }
 
-function closeModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
-}
-
+// ─── Import / Export ─────────────────────────────────────────────────────────
 function openImport() {
   document.getElementById('importModal').classList.add('open');
 }
 
-// ─── CSV Import ───────────────────────────────────────────────────────────────
+function closeModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+}
+
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('dropZone').classList.remove('drag');
@@ -994,8 +1496,7 @@ function handleFile(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    const text = ev.target.result;
-    const parsed = parseCSV(text);
+    const parsed = parseCSV(ev.target.result);
     if (!parsed.length) { toast('Keine Daten gefunden'); return; }
     entries = parsed;
     recalcGefahren();
@@ -1007,24 +1508,17 @@ function handleFile(file) {
   reader.readAsText(file, 'UTF-8');
 }
 
-// ─── CSV Export ───────────────────────────────────────────────────────────────
 function exportCSV() {
   const sorted = sortEntries(entries);
   calcVerbrauch(sorted);
 
   const header = 'Datum;Kilometerstand;Gefahren;Liter;Tankstelle;Sorte;Voll;Betrag;Liter Preis ;Uhrzeit;Ort;L;T';
   const rows = sorted.map(e => [
-    e.datum,
-    e.km,
-    e.gefahren || '',
-    String(e.liter).replace('.', ','),
-    e.tankstelle,
-    e.sorte,
+    e.datum, e.km, e.gefahren || '',
+    String(e.liter).replace('.', ','), e.tankstelle, e.sorte,
     e.voll ? '🟢' : '🔴',
-    String(e.betrag).replace('.', ','),
-    String(e.literpreis).replace('.', ','),
-    e.uhrzeit,
-    e.ort,
+    String(e.betrag).replace('.', ','), String(e.literpreis).replace('.', ','),
+    e.uhrzeit, e.ort,
     e.verbrauch !== '' ? String(e.verbrauch).replace('.', ',') : '',
     e.temp !== '' ? e.temp + ' °C' : '',
   ].join(';'));
@@ -1035,7 +1529,7 @@ function exportCSV() {
   const sumRow = `;;${totalKm};${totalLiter.toFixed(2).replace('.',',')};;;;${totalBetrag.toFixed(2).replace('.',',')};;;;;;`;
 
   const csv = [header, ...rows, sumRow].join('\n');
-  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'Auris-Verbrauch.csv'; a.click();
@@ -1043,7 +1537,7 @@ function exportCSV() {
   toast('CSV exportiert');
 }
 
-// ─── Temperatur holen ─────────────────────────────────────────────────────────
+// ─── Temperatur ───────────────────────────────────────────────────────────────
 async function fetchTemp() {
   const btn = document.querySelector('.btn-fetch-temp');
   btn.textContent = '⏳';
@@ -1070,7 +1564,6 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
 
 // ─── Tankstellen Logos ────────────────────────────────────────────────────────
 const TANKSTELLEN = [
@@ -1131,7 +1624,6 @@ function renderTsPicker(selected) {
     </button>
   `).join('');
 
-  // Logos asynchron nachladen
   TANKSTELLEN.forEach(async ts => {
     if (!ts.domain) return;
     const data = await fetchLogo(ts.domain);
@@ -1155,14 +1647,12 @@ function setTankstelle(name) {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 load();
 loadLogoCache();
-renderTsPicker('Nordoel');
+resetForm();
 render();
 
-// Close on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m =>
   m.addEventListener('click', e => { if (e.target === m) closeModals(); }));
 
-// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
