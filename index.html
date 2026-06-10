@@ -778,7 +778,7 @@
         <div class="overflow-dropdown" id="overflowMenu">
           <button class="overflow-item" onclick="openImport();toggleOverflow()">📂 Import</button>
           <button class="overflow-item" onclick="exportCSV();toggleOverflow()">💾 Export</button>
-          <button class="overflow-item" id="driveMenuItem" onclick="driveAction();toggleOverflow()">☁️ Drive Sync</button>
+          <button class="overflow-item" id="driveMenuItem" onclick="driveAction();toggleOverflow()">☁️ Drive Synchronisieren</button>
         </div>
       </div>
     </div>
@@ -1749,7 +1749,7 @@ let driveToken = null;
 let driveFileId = null;
 
 function driveAction() {
-  if (driveToken) showDriveMenu();
+  if (driveToken) driveSync();
   else driveLogin();
 }
 
@@ -1773,67 +1773,73 @@ function checkOAuthRedirect() {
   driveToken = token;
   const btn = document.getElementById('driveMenuItem');
   if (btn) { btn.textContent = '☁️ Sync'; btn.style.color = 'var(--accent)'; }
-  toast('✅ Drive verbunden');
-  driveLoad();
+  toast('✅ Drive verbunden – synchronisiere...');
+  driveSync();
 }
 
-function showDriveMenu() {
-  const choice = confirm('Google Drive\n\nOK = Daten hochladen (Speichern)\nAbbrechen = Daten herunterladen (Laden)');
-  if (choice) driveSave();
-  else driveLoad();
-}
-
-async function driveSave() {
+// Merge-Sync: lokale + Drive-Einträge zusammenführen, nichts verlieren
+async function driveSync() {
   if (!driveToken) { driveLogin(); return; }
-  toast('⏳ Speichere...');
+  toast('⏳ Synchronisiere...');
   try {
-    const csv = buildCSV();
-    const blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
     const fileId = await findDriveFile();
 
-    let url, method;
+    let driveEntries = [];
     if (fileId) {
-      url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
-      method = 'PATCH';
-    } else {
-      const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'text/csv' })
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: { Authorization: 'Bearer ' + driveToken }
       });
-      const metaJson = await meta.json();
-      driveFileId = metaJson.id;
-      url = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`;
-      method = 'PATCH';
+      const text = await r.text();
+      driveEntries = parseCSV(text);
     }
 
-    await fetch(url, {
-      method,
-      headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'text/csv' },
-      body: blob
-    });
-    toast('✅ In Drive gespeichert');
-  } catch(e) { toast('❌ Fehler: ' + e.message); }
-}
+    // Merge: alle Einträge zusammenführen, Duplikate anhand datum+km+uhrzeit entfernen
+    const key = e => `${e.datum}|${e.km}|${e.uhrzeit}`;
+    const seen = new Set();
+    const merged = [];
+    for (const e of [...entries, ...driveEntries]) {
+      const k = key(e);
+      if (!seen.has(k)) { seen.add(k); merged.push(e); }
+    }
 
-async function driveLoad() {
-  if (!driveToken) { driveLogin(); return; }
-  toast('⏳ Lade von Drive...');
-  try {
-    const fileId = await findDriveFile();
-    if (!fileId) { toast('Keine Datei in Drive gefunden'); return; }
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-      headers: { Authorization: 'Bearer ' + driveToken }
-    });
-    const text = await r.text();
-    const parsed = parseCSV(text);
-    if (!parsed.length) { toast('Datei leer oder unlesbar'); return; }
-    entries = parsed;
+    entries = merged;
     recalcGefahren();
     save();
     render();
-    toast(`✅ ${parsed.length} Einträge geladen`);
+
+    // Zusammengeführte Daten auf Drive hochladen
+    await driveUpload(fileId);
+
+    const neu = merged.length - driveEntries.length;
+    toast(`✅ Sync fertig · ${merged.length} Einträge${neu > 0 ? ` (+${neu} neu)` : ''}`);
   } catch(e) { toast('❌ Fehler: ' + e.message); }
+}
+
+async function driveUpload(existingFileId) {
+  const csv = buildCSV();
+  const blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
+
+  let url, method;
+  if (existingFileId) {
+    url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`;
+    method = 'PATCH';
+  } else {
+    const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'text/csv' })
+    });
+    const metaJson = await meta.json();
+    driveFileId = metaJson.id;
+    url = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`;
+    method = 'PATCH';
+  }
+
+  await fetch(url, {
+    method,
+    headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'text/csv' },
+    body: blob
+  });
 }
 
 async function findDriveFile() {
