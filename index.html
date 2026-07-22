@@ -726,6 +726,91 @@
   .fab:hover { transform: translateX(-50%) translateY(-3px); box-shadow: 0 8px 40px rgba(14,180,190,0.6); }
   .fab:active { transform: translateX(-50%) translateY(1px); }
 
+  /* ── Sync-Status Badge ── */
+  .sync-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sync-badge:hover { border-color: var(--accent); color: var(--text); }
+  .sync-badge.syncing { color: var(--accent); border-color: var(--accent); animation: pulse 1.2s infinite; }
+  .sync-badge.ok     { color: var(--accent); border-color: rgba(30,207,207,0.3); }
+  .sync-badge.error  { color: var(--red); border-color: rgba(240,115,115,0.3); }
+  .sync-badge.login  { color: var(--yellow); border-color: rgba(255,170,0,0.3); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* ── Startup Overlay ── */
+  .startup-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    transition: opacity 0.4s;
+  }
+  .startup-overlay.hide { opacity: 0; pointer-events: none; }
+  .startup-overlay.gone { display: none; }
+
+  .startup-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .startup-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+  .startup-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .startup-text { font-size: 14px; color: var(--muted); }
+
+  .startup-login-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    display: none;
+  }
+
+  .startup-skip {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--sans);
+    text-decoration: underline;
+    display: none;
+  }
+
   /* ── Toast ── */
   .toast {
     position: fixed;
@@ -762,6 +847,15 @@
 </head>
 <body>
 
+<!-- Startup Overlay -->
+<div class="startup-overlay" id="startupOverlay">
+  <div class="startup-logo"><img src="icon-192.png" alt="Tankbuch"></div>
+  <div class="startup-spinner" id="startupSpinner"></div>
+  <div class="startup-text" id="startupText">Synchronisiere…</div>
+  <button class="startup-login-btn" id="startupLoginBtn" onclick="startupLogin()">☁️ Mit Google anmelden</button>
+  <button class="startup-skip" id="startupSkipBtn" onclick="dismissStartup()">Ohne Sync fortfahren</button>
+</div>
+
 <header>
   <div class="header-top">
     <div class="logo">
@@ -772,13 +866,16 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="sync-badge" id="syncBadge" onclick="driveAction()" title="Drive synchronisieren">
+        <span id="syncIcon">☁️</span><span id="syncLabel">Sync</span>
+      </button>
       <button class="btn btn-ghost" id="themeBtn" onclick="toggleTheme()" title="Hell/Dunkel" style="padding:8px 10px;">🌙</button>
       <div class="overflow-menu">
         <button class="overflow-btn" onclick="toggleOverflow()" id="overflowBtn">⋯</button>
         <div class="overflow-dropdown" id="overflowMenu">
           <button class="overflow-item" onclick="openImport();toggleOverflow()">📂 Import</button>
           <button class="overflow-item" onclick="exportCSV();toggleOverflow()">💾 Export</button>
-          <button class="overflow-item" id="driveMenuItem" onclick="driveAction();toggleOverflow()">☁️ Drive Synchronisieren</button>
+          <button class="overflow-item" onclick="driveAction();toggleOverflow()">☁️ Drive Sync</button>
         </div>
       </div>
     </div>
@@ -1743,44 +1840,166 @@ function setTankstelle(name) {
 // ─── Google Drive Sync ────────────────────────────────────────────────────────
 const GAPI_CLIENT_ID = '418288105228-tah8brgpaevtkmvgvr863pda4hokhhr1.apps.googleusercontent.com';
 const DRIVE_FILENAME = 'Auris-Verbrauch.csv';
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 let driveToken = null;
 let driveFileId = null;
 
-function driveAction() {
-  if (driveToken) driveSync();
-  else driveLogin();
+// ── Token-Persistenz: Token im localStorage speichern (~58 Min gültig) ──
+function saveToken(token) {
+  const expiry = Date.now() + 3500 * 1000;
+  try { localStorage.setItem('drive_token_v2', JSON.stringify({ token, expiry })); } catch(e){}
+  driveToken = token;
 }
 
+function loadToken() {
+  try {
+    const d = localStorage.getItem('drive_token_v2');
+    if (!d) return null;
+    const { token, expiry } = JSON.parse(d);
+    if (Date.now() < expiry) return token;
+    localStorage.removeItem('drive_token_v2');
+  } catch(e){}
+  return null;
+}
+
+function clearToken() {
+  try { localStorage.removeItem('drive_token_v2'); } catch(e){}
+  driveToken = null;
+  driveFileId = null;
+}
+
+// ── Formular-Zustand vor OAuth-Redirect retten ──
+function saveFormBeforeRedirect() {
+  try {
+    localStorage.setItem('pending_form', JSON.stringify({
+      datetime:   document.getElementById('f_datetime').value,
+      km:         document.getElementById('f_km').value,
+      liter:      document.getElementById('f_liter').value,
+      betrag:     document.getElementById('f_betrag').value,
+      ort:        document.getElementById('f_ort').value,
+      temp:       document.getElementById('f_temp').value,
+      sorte:      document.getElementById('f_sorte').value,
+      tankstelle: document.getElementById('f_tankstelle').value,
+      voll:       vollState,
+      editIndex,
+    }));
+  } catch(e){}
+}
+
+function restoreFormAfterRedirect() {
+  try {
+    const d = localStorage.getItem('pending_form');
+    if (!d) return;
+    localStorage.removeItem('pending_form');
+    const s = JSON.parse(d);
+    if (!s.km && !s.liter && !s.betrag) return; // Formular war leer
+    document.getElementById('f_datetime').value   = s.datetime || '';
+    document.getElementById('f_km').value         = s.km || '';
+    document.getElementById('f_liter').value      = s.liter || '';
+    document.getElementById('f_betrag').value     = s.betrag || '';
+    document.getElementById('f_ort').value        = s.ort || '';
+    document.getElementById('f_temp').value       = s.temp || '';
+    document.getElementById('f_sorte').value      = s.sorte || 'Super E5';
+    renderTsPicker(s.tankstelle || 'Nordoel');
+    setTankstelle(s.tankstelle || 'Nordoel');
+    setVoll(s.voll !== false);
+    editIndex = s.editIndex !== undefined ? s.editIndex : null;
+    if (s.km || s.liter || s.betrag) {
+      document.getElementById('formCardTitle').textContent =
+        editIndex !== null ? 'Eintrag bearbeiten' : 'Neue Tankung';
+      if (editIndex !== null) document.getElementById('cancelEditBtn').style.display = '';
+    }
+  } catch(e){}
+}
+
+// ── Sync-Badge aktualisieren ──
+function setSyncBadge(state, label) {
+  const badge = document.getElementById('syncBadge');
+  const icon  = document.getElementById('syncIcon');
+  const lbl   = document.getElementById('syncLabel');
+  if (!badge) return;
+  badge.className = 'sync-badge ' + state;
+  icon.textContent  = { syncing:'⏳', ok:'✅', error:'⚠️', login:'🔑', idle:'☁️' }[state] || '☁️';
+  lbl.textContent   = label;
+}
+
+// ── Startup-Overlay ──
+function showStartupOverlay(text) {
+  const o = document.getElementById('startupOverlay');
+  if (o) o.classList.remove('gone', 'hide');
+  setStartupText(text);
+}
+
+function setStartupText(text) {
+  const el = document.getElementById('startupText');
+  if (el) el.textContent = text;
+}
+
+function showStartupLoginButton() {
+  document.getElementById('startupSpinner').style.display = 'none';
+  document.getElementById('startupLoginBtn').style.display = '';
+  document.getElementById('startupSkipBtn').style.display = '';
+  setStartupText('Anmeldung erforderlich für Drive-Sync');
+}
+
+function dismissStartup() {
+  const o = document.getElementById('startupOverlay');
+  if (!o) return;
+  o.classList.add('hide');
+  setTimeout(() => o.classList.add('gone'), 420);
+}
+
+function startupLogin() {
+  saveFormBeforeRedirect();
+  driveLogin();
+}
+
+// ── OAuth-Login ──
 function driveLogin() {
   const redirectUri = 'https://mioeck.github.io/Tankbuch/index.html';
   const url = 'https://accounts.google.com/o/oauth2/v2/auth'
-    + '?client_id=' + encodeURIComponent(GAPI_CLIENT_ID)
+    + '?client_id='    + encodeURIComponent(GAPI_CLIENT_ID)
     + '&redirect_uri=' + encodeURIComponent(redirectUri)
     + '&response_type=token'
-    + '&scope=' + encodeURIComponent(DRIVE_SCOPE);
+    + '&scope='        + encodeURIComponent(DRIVE_SCOPE)
+    + '&prompt=select_account';
   location.href = url;
 }
 
+// ── OAuth-Redirect verarbeiten ──
 function checkOAuthRedirect() {
   const hash = location.hash;
-  if (!hash) return;
+  if (!hash) return false;
   const params = new URLSearchParams(hash.replace('#', '?'));
-  const token = params.get('access_token');
-  if (!token) return;
+  const token  = params.get('access_token');
+  if (!token) return false;
   history.replaceState(null, '', location.pathname);
-  driveToken = token;
-  const btn = document.getElementById('driveMenuItem');
-  if (btn) { btn.textContent = '☁️ Sync'; btn.style.color = 'var(--accent)'; }
-  toast('✅ Drive verbunden – synchronisiere...');
-  driveSync();
+  saveToken(token);
+  return true;
 }
 
-// Merge-Sync: lokale + Drive-Einträge zusammenführen, nichts verlieren
-async function driveSync() {
-  if (!driveToken) { driveLogin(); return; }
-  toast('⏳ Synchronisiere...');
+// ── Manueller Button-Klick ──
+function driveAction() {
+  if (driveToken) driveSync(false);
+  else {
+    saveFormBeforeRedirect();
+    driveLogin();
+  }
+}
+
+// ── Merge-Sync: lokale + Drive-Einträge zusammenführen ──
+async function driveSync(fromStartup) {
+  if (!driveToken) {
+    if (fromStartup) { showStartupLoginButton(); return; }
+    saveFormBeforeRedirect();
+    driveLogin();
+    return;
+  }
+
+  setSyncBadge('syncing', 'Sync…');
+  if (fromStartup) setStartupText('Synchronisiere mit Drive…');
+
   try {
     const fileId = await findDriveFile();
 
@@ -1789,11 +2008,19 @@ async function driveSync() {
       const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
         headers: { Authorization: 'Bearer ' + driveToken }
       });
+      if (r.status === 401) {
+        // Token abgelaufen
+        clearToken();
+        if (fromStartup) { showStartupLoginButton(); return; }
+        saveFormBeforeRedirect();
+        driveLogin();
+        return;
+      }
       const text = await r.text();
       driveEntries = parseCSV(text);
     }
 
-    // Merge: alle Einträge zusammenführen, Duplikate anhand datum+km+uhrzeit entfernen
+    // Merge: lokale Einträge haben Vorrang bei Duplikaten (neuere Änderung)
     const key = e => `${e.datum}|${e.km}|${e.uhrzeit}`;
     const seen = new Set();
     const merged = [];
@@ -1807,39 +2034,56 @@ async function driveSync() {
     save();
     render();
 
-    // Zusammengeführte Daten auf Drive hochladen
     await driveUpload(fileId);
 
-    const neu = merged.length - driveEntries.length;
-    toast(`✅ Sync fertig · ${merged.length} Einträge${neu > 0 ? ` (+${neu} neu)` : ''}`);
-  } catch(e) { toast('❌ Fehler: ' + e.message); }
+    const lastSync = new Date().toLocaleTimeString('de', {hour:'2-digit', minute:'2-digit'});
+    setSyncBadge('ok', lastSync);
+
+    if (fromStartup) {
+      setStartupText(`✅ ${merged.length} Einträge synchronisiert`);
+      setTimeout(() => dismissStartup(), 800);
+    } else {
+      const neu = merged.length - driveEntries.length;
+      toast(`✅ Sync · ${merged.length} Einträge${neu > 0 ? ` (+${neu} neu)` : ''}`);
+    }
+
+  } catch(e) {
+    setSyncBadge('error', 'Fehler');
+    if (fromStartup) {
+      setStartupText('Sync fehlgeschlagen');
+      setTimeout(() => dismissStartup(), 1500);
+    } else {
+      toast('❌ ' + e.message);
+    }
+  }
 }
 
 async function driveUpload(existingFileId) {
-  const csv = buildCSV();
-  const blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
+  const csv  = buildCSV();
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
 
   let url, method;
   if (existingFileId) {
-    url = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`;
+    url    = `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`;
     method = 'PATCH';
   } else {
-    const meta = await fetch('https://www.googleapis.com/drive/v3/files', {
-      method: 'POST',
+    const meta     = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method:  'POST',
       headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'text/csv' })
+      body:    JSON.stringify({ name: DRIVE_FILENAME, mimeType: 'text/csv' })
     });
     const metaJson = await meta.json();
-    driveFileId = metaJson.id;
-    url = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`;
+    driveFileId    = metaJson.id;
+    url    = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`;
     method = 'PATCH';
   }
 
-  await fetch(url, {
+  const r = await fetch(url, {
     method,
     headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'text/csv' },
     body: blob
   });
+  if (r.status === 401) { clearToken(); throw new Error('Token abgelaufen – bitte neu anmelden'); }
 }
 
 async function findDriveFile() {
@@ -1904,7 +2148,6 @@ document.addEventListener('click', e => {
 loadTheme();
 load();
 loadLogoCache();
-checkOAuthRedirect();
 resetForm();
 render();
 
@@ -1914,6 +2157,30 @@ document.querySelectorAll('.modal-overlay').forEach(m =>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+// Startup-Sync: läuft nach dem ersten Render
+(async function startupSync() {
+  // 1. OAuth-Redirect prüfen (nach Google-Anmeldung)
+  const wasRedirect = checkOAuthRedirect();
+
+  // 2. Formular-Zustand nach Redirect wiederherstellen (vor dem Sync!)
+  if (wasRedirect) restoreFormAfterRedirect();
+
+  // 3. Token laden (gespeichert oder neu aus Redirect)
+  driveToken = loadToken();
+
+  if (driveToken) {
+    // Token vorhanden → Auto-Sync beim Start
+    showStartupOverlay('Synchronisiere mit Drive…');
+    setSyncBadge('syncing', 'Sync…');
+    await driveSync(true);
+  } else {
+    // Kein Token → Login-Button zeigen
+    showStartupOverlay('');
+    showStartupLoginButton();
+    setSyncBadge('login', 'Anmelden');
+  }
+})();
 </script>
 </body>
 </html>
