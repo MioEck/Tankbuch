@@ -853,7 +853,7 @@
   <div class="startup-spinner" id="startupSpinner"></div>
   <div class="startup-text" id="startupText">Synchronisiere…</div>
   <button class="startup-login-btn" id="startupLoginBtn" onclick="startupLogin()">☁️ Mit Google anmelden</button>
-  <button class="startup-skip" id="startupSkipBtn" onclick="dismissStartup()">Ohne Sync fortfahren</button>
+  <button class="startup-skip" id="startupSkipBtn" onclick="dismissStartup()" style="display:block">Ohne Sync fortfahren</button>
 </div>
 
 <header>
@@ -1938,9 +1938,9 @@ function setStartupText(text) {
 
 function showStartupLoginButton() {
   document.getElementById('startupSpinner').style.display = 'none';
-  document.getElementById('startupLoginBtn').style.display = '';
-  document.getElementById('startupSkipBtn').style.display = '';
-  setStartupText('Anmeldung erforderlich für Drive-Sync');
+  document.getElementById('startupLoginBtn').style.display = 'block';
+  document.getElementById('startupSkipBtn').style.display = 'block';
+  setStartupText('Drive-Sync: Anmeldung erforderlich');
 }
 
 function dismissStartup() {
